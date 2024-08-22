@@ -1,5 +1,5 @@
 Historia de usuario:
-Descripción: Como usuario, quiero registrarme, iniciar sesión y gestionar mi perfil para tener una cuenta personalizada y segura en la plataforma.
+Descripción: Como usuario, quiero registrarme, iniciar sesión y gestionar mi perfil para tener una cuenta personalizada y segura en la plataforma.<br>
 Criterio de Aceptación:
     1. El usuario puede registrarse con su correo electrónico y una contraseña segura.
     2. El usuario puede iniciar sesión con las credenciales correctas.
