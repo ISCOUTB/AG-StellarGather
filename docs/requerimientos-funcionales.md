@@ -84,6 +84,6 @@ El sistema debe permitir a los usuarios dejar calificaciones y comentarios sobre
 
 **Prioridad:** Baja  
 **Dependencias:** Requiere que los usuarios hayan asistido a los eventos y que el sistema gestione sus registros.  
-**Notas:** Las reseñas ayudan a otros usuarios a tomar decisiones informadas sobre eventos y fomentan la retroalimentación..
+**Notas:** Las reseñas ayudan a otros usuarios a tomar decisiones informadas sobre eventos y fomentan la retroalimentación.
 
 ---
