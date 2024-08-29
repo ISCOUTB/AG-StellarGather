@@ -6,7 +6,7 @@
 
     1. El usuario puede registrarse con su correo electrónico y una contraseña segura.
     2. El usuario puede iniciar sesión con las credenciales correctas.
-    3. El usuario puede acceder y actualizar su perfil y preferencias.
+    3. El usuario puede acceder, personalizar y actualizar su perfil y preferencias.
 
 **Tareas Relacionadas**:
 
