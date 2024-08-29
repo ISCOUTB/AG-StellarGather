@@ -6,7 +6,7 @@
 
     1. El usuario puede buscar eventos utilizando filtros por nombre, categoria, ubicación y fecha.
     2. El usuario puede ver una lista de eventos que coinciden con los criterios de búsqueda. 
-    3. El usuario puede acceder una página de detalles para obtener información completa del evento seleccionado. 
+    3. El usuario puede acceder a una página de detalles para obtener información completa del evento seleccionado. 
 
 **Tareas Relacionadas**:
 
