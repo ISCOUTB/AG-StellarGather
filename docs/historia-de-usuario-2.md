@@ -1,6 +1,6 @@
 # Historia de usuario:
 
-**Descripción**: <br>
+**Descripción**: Como **usuario**, quiero buscar y explorar eventos por nombre, categoría, ubicación y fecha para encontrar eventos que me interesen.<br>
 
 **Criterio de Aceptación**:
 
