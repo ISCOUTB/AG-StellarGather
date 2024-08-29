@@ -6,7 +6,7 @@
 
     1. El usuario puede registrarse en eventos y recibir confirmaciones.
     2. El usuario puede ver una lista de eventos en los que está registrado.
-    3. El usuario puede cancelar su registro si lo desea y recibir confirmación de la cancelación.
+    3. El usuario puede cancelar su registro si lo desea y recibir una confirmación de la cancelación.
 
 *Tareas Relacionadas*:
 
