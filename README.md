@@ -33,8 +33,8 @@ Antes de comenzar, asegúrate de tener los siguientes software instalados:
 ### 1. Clonar el repositorio
 
 ```bash
-git clone https://github.com/tu-usuario/stellargather.git
-cd stellargather
+git clone https://github.com/ISCOUTB/AG-StellarGather
+cd AG-StellarGather
 ```
 
 ### 2. Configurar el archivo `docker-compose.yml`
@@ -46,8 +46,6 @@ El archivo `docker-compose.yml` está configurado para levantar todos los servic
 - Redis
 - Apache (sirviendo la aplicación web)
 - Los microservicios SQL y NoSQL
-
-Si necesitas modificar las credenciales de base de datos, puedes ajustar las variables de entorno en este archivo.
 
 ### 3. Levantar los servicios con Docker
 
@@ -61,7 +59,7 @@ Esto iniciará todos los contenedores: MySQL, MongoDB, Redis, Apache y los micro
 
 ### 4. Verificar el funcionamiento
 
-Una vez que los contenedores estén en ejecución, puedes acceder a la aplicación web en `http://localhost` o el puerto que hayas configurado.
+Una vez que los contenedores estén en ejecución, puedes acceder a la aplicación web en `http://localhost` o cada puerto.
 
 Puedes interactuar con las APIs o la página web.
 
