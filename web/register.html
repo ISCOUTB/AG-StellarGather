@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/login-register.css" />
+    <title>StellarGather - Registrarse</title>
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+</head>
+<body>
+    <main class="auth-container">
+        <div class="wrapper">
+            <img src="images/logo-stellargather.webp" width="150">
+            <form class="auth-form" id="register-form" action="" method="POST">
+                <h1>Registro</h1>
+            <div class="input-box">
+                <input type="text" id="username" name="username" placeholder="Usuario" required>
+            <i class='bx bxs-user'></i>
+            </div>
+            <div class="input-box">
+                <input type="text" id="name" name="name" placeholder="Nombre" required>
+            <i class='bx bxs-tag'></i></i>
+            </div>
+            <div class="input-box">
+                <input ype="email" id="email" name="email" placeholder="Email" required>
+            <i class='bx bxs-envelope'></i>
+            </div>
+            <div class="input-box">
+                <input type="password" id="password" name="password" placeholder="Contraseña" required>
+            <i class='bx bxs-lock'></i>
+            </div>
+            <div class="remember-forgot">
+                <label><input type="checkbox">Acepto los términos y condiciones</label>
+            </div>
+            <button type="submit" class="btn">Crear Cuenta</button>
+            
+            <div class="login-link">
+                    <p>¿Ya tienes una cuenta? <a href="login.html">Login</a></p>
+            </div>
+        </div>
+    </main>
+    <script src="js/register.js" type="module"></script>
+    <script>
+        function updateAuthLinks() {
+            const isLoggedIn = localStorage.getItem('authToken');
+            if (isLoggedIn) {
+                window.location.href = '/';
+            } else {
+            }
+        }
+        window.onload = updateAuthLinks;
+    </script>
+</body>
+</html>

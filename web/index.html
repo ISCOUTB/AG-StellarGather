@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StellarGather - Bienvenido</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <script src="js/auth.js" defer></script>
+</head>
+<body>
+    <div data-include="template-parts/header.html"></div>
+    <main>
+        <section class="hero">
+            <h1>Explora y Únete a los Mejores Eventos</h1>
+            <p>Descubre una gran variedad de eventos cerca de ti y en línea. ¡Regístrate para no perderte nada!</p>
+            <a href="register.html" class="cta-button">¡Comienza Ahora!</a>
+        </section>
+
+        <section class="events-preview">
+            <h2>Próximos Eventos</h2>
+            <div class="events-grid">
+                <div class="event-card">
+                    <img src="https://i.blogs.es/421b23/mundial-02/1366_2000.jpg" alt="Evento 1">
+                    <h3>Concierto en Vivo</h3>
+                    <p>Disfruta de música en vivo en tu ciudad.</p>
+                </div>
+                <div class="event-card">
+                    <img src="https://i.blogs.es/421b23/mundial-02/1366_2000.jpg" alt="Evento 2">
+                    <h3>Charla de Tecnología</h3>
+                    <p>Aprende sobre las últimas tendencias en tecnología.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="featured-events">
+            <h2>Eventos Destacados</h2>
+            <div class="events-carousel">
+                <div class="event-card">
+                    <img src="images/event1.jpg" alt="Evento 1">
+                    <h3>Conferencia de Innovación</h3>
+                    <p>Explora las últimas tendencias en tecnología.</p>
+                    <button class="cta-button">Más Info</button>
+                </div>
+                <div class="event-card">
+                    <img src="images/event2.jpg" alt="Evento 2">
+                    <h3>Taller de Desarrollo Web</h3>
+                    <p>Mejora tus habilidades de programación.</p>
+                    <button class="cta-button">Más Info</button>
+                </div>
+            </div>
+        </section>
+    
+        <section class="testimonials">
+            <h2>Lo que Dicen Nuestros Usuarios</h2>
+            <div class="testimonial">
+                <p>“StellarGather me ha permitido conectarme con eventos que realmente me interesan.”</p>
+                <span>- Maria González</span>
+            </div>
+            <div class="testimonial">
+                <p>“Fácil de usar, genial para mantenerse al día con los eventos más emocionantes.”</p>
+                <span>- Juan Pérez</span>
+            </div>
+        </section>
+    
+    </main>
+    <div data-include="template-parts/footer.html"></div>
+
+    <script src="js/main.js" type="module"></script>
+    <script src="js/include.js"></script>
+</body>
+</html>
