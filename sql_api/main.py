@@ -5,6 +5,8 @@ from database import execute_query, execute_non_query
 from passlib.context import CryptContext
 from fastapi.middleware.cors import CORSMiddleware
 
+QUERY_LAST_INSERT_ID = "SELECT LAST_INSERT_ID() as id"
+
 app = FastAPI(
     title="StellarGather SQL Service API",
     description="API para gestionar usuarios, eventos y registros de usuarios en la plataforma StellarGather. Esta API es responsable de gestionar datos de usuarios, información de eventos y detalles de registro mediante una base de datos SQL (MySQL).",
@@ -71,7 +73,7 @@ def create_user(user: User):
     rows_affected = execute_non_query(query, params)
     if rows_affected == 0:
         raise HTTPException(status_code=400, detail="User not created")
-    user.id = execute_query("SELECT LAST_INSERT_ID() as id")[0]['id']
+    user.id = execute_query(QUERY_LAST_INSERT_ID)[0]['id']
     user.password = "********"
     return user
 
@@ -176,7 +178,7 @@ def create_registration(registration: Registration):
     rows_affected = execute_non_query(query, params)
     if rows_affected == 0:
         raise HTTPException(status_code=400, detail="Registration not created")
-    registration.id = execute_query("SELECT LAST_INSERT_ID() as id")[0]['id']
+    registration.id = execute_query(QUERY_LAST_INSERT_ID)[0]['id']
     return registration
 
 @app.get("/registrations/{registration_id}", response_model=Registration, tags=["registrations"])
