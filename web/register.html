@@ -47,6 +47,7 @@
             if (isLoggedIn) {
                 window.location.href = '/';
             } else {
+                return;
             }
         }
         window.onload = updateAuthLinks;
