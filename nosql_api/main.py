@@ -131,7 +131,7 @@ def create_interaction(interaction: Interaction):
 
 @app.get("/interactions", response_model=List[Interaction], tags=["interactions"])
 def get_user_interactions(user_id: str):
-    interactions = list(db.interactions.find({"userId": user-_id}))
+    interactions = list(db.interactions.find({"userId": user_id}))
     if not interactions:
         raise HTTPException(status_code=404, detail="No se encontraron interacciones para el usuario")
     return [Interaction(**interaction) for interaction in interactions]
