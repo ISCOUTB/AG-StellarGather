@@ -91,8 +91,8 @@ def create_comment(comment: Comment):
     return comment
 
 @app.get("/comments", response_model=List[Comment], tags=["comments"])
-def get_comments_by_event(eventId: str):
-    comments = list(db.comments.find({"eventId": eventId}))
+def get_comments_by_event(event_id: str):
+    comments = list(db.comments.find({"eventId": event_id}))
     if not comments:
         raise HTTPException(status_code=404, detail="Comentarios no encontrados para el evento")
     return [Comment(**comment) for comment in comments]
@@ -115,8 +115,8 @@ def create_notification(notification: Notification):
     return notification
 
 @app.get("/notifications", response_model=List[Notification], tags=["notifications"])
-def get_notifications(userId: str):
-    notifications = list(db.notifications.find({"userId": userId}))
+def get_notifications(user_id: str):
+    notifications = list(db.notifications.find({"userId": user_id}))
     if not notifications:
         raise HTTPException(status_code=404, detail="No se encontraron notificaciones para el usuario")
     return [Notification(**notification) for notification in notifications]
@@ -130,8 +130,8 @@ def create_interaction(interaction: Interaction):
     return {"message": "Interacción registrada exitosamente"}
 
 @app.get("/interactions", response_model=List[Interaction], tags=["interactions"])
-def get_user_interactions(userId: str):
-    interactions = list(db.interactions.find({"userId": userId}))
+def get_user_interactions(user_id: str):
+    interactions = list(db.interactions.find({"userId": user-_id}))
     if not interactions:
         raise HTTPException(status_code=404, detail="No se encontraron interacciones para el usuario")
     return [Interaction(**interaction) for interaction in interactions]
