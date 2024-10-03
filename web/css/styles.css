@@ -226,6 +226,7 @@ body {
     align-items: center;
     min-height: 80vh;
     background-color: #f4f4f9;
+    animation: fadeIn 0.5s ease-in-out;
 }
 
 .auth-form {
@@ -295,11 +296,6 @@ label.active {
 
 .cta-button:hover {
     transform: scale(1.05);
-}
-
-/* Animación para cargar las formas */
-.auth-form {
-    animation: fadeIn 0.5s ease-in-out;
 }
 
 @keyframes fadeIn {
