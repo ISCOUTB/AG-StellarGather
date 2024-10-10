@@ -6,6 +6,8 @@ from pymongo import MongoClient
 from datetime import datetime, timezone
 from fastapi.middleware.cors import CORSMiddleware
 
+DIRECTION = "http://localhost"
+
 app = FastAPI(
     title="StellarGather NoSQL Service API",
     description="API para gestionar interacciones, errores, comentarios, calificaciones y notificaciones en el servicio NoSQL de StellarGather.",
@@ -18,7 +20,7 @@ app = FastAPI(
 )
 
 origins = [
-    "http://localhost",
+    DIRECTION,
 ]
 
 app.add_middleware(
