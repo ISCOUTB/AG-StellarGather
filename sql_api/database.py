@@ -3,11 +3,13 @@ import mysql.connector
 from mysql.connector import Error
 from fastapi import HTTPException
 
+DIRECTION = "localhost"
+
 def get_db_connection():
     """Crea una conexión a la base de datos MySQL utilizando variables de entorno."""
     try:
         connection = mysql.connector.connect(
-            host=os.getenv("DB_HOST", "localhost"),
+            host=os.getenv("DB_HOST", DIRECTION),
             user=os.getenv("DB_USER", "user"),
             password=os.getenv("DB_PASSWORD", "password"),
             database=os.getenv("DB_NAME", "stellargather")
