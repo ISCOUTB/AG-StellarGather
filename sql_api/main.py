@@ -5,6 +5,7 @@ from database import execute_query, execute_non_query
 from passlib.context import CryptContext
 from fastapi.middleware.cors import CORSMiddleware
 
+DIRECTION = "http://localhost"
 QUERY_LAST_INSERT_ID = "SELECT LAST_INSERT_ID() as id"
 
 app = FastAPI(
@@ -19,7 +20,7 @@ app = FastAPI(
 )
 
 origins = [
-    "http://localhost",
+    DIRECTION,
 ]
 
 app.add_middleware(
