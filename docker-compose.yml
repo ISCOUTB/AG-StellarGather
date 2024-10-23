@@ -12,7 +12,7 @@ services:
     volumes:
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
-      - stellargather_network
+      - ag
 
   phpmyadmin:
     image: phpmyadmin:latest
@@ -25,7 +25,7 @@ services:
     depends_on:
       - mysql
     networks:
-      - stellargather_network
+      - ag
 
   mongodb:
     image: mongo:latest
@@ -35,7 +35,7 @@ services:
     volumes:
       - mongo_data:/data/db
     networks:
-      - stellargather_network
+      - ag
 
   mongo-express:
     image: mongo-express:latest
@@ -52,7 +52,7 @@ services:
     depends_on:
       - mongodb
     networks:
-      - stellargather_network
+      - ag
 
   sqlapi:
     build:
@@ -69,7 +69,7 @@ services:
     depends_on:
       - mysql
     networks:
-      - stellargather_network
+      - ag
 
   nosqlapi:
     build:
@@ -83,7 +83,7 @@ services:
     depends_on:
       - mongodb
     networks:
-      - stellargather_network
+      - ag
   
   apache:
     image: httpd:latest
@@ -93,12 +93,12 @@ services:
     volumes:
       - ./web:/usr/local/apache2/htdocs/
     networks:
-      - stellargather_network
+      - ag
 
 volumes:
   mysql_data:
   mongo_data:
 
 networks:
-  stellargather_network:
-    driver: bridge
+  ag:
+    external: True
