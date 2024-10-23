@@ -1,7 +1,7 @@
 services:
   mysql:
     image: mysql:latest
-    container_name: mysql-db
+    container_name: ag-stellargather-mysql-db
     environment:
       MYSQL_USER: username
       MYSQL_PASSWORD: password
@@ -16,7 +16,7 @@ services:
 
   phpmyadmin:
     image: phpmyadmin:latest
-    container_name: phpmyadmin
+    container_name: ag-stellargather-phpmyadmin
     environment:
       PMA_HOST: mysql
       MYSQL_ROOT_PASSWORD: rootpassword
@@ -29,7 +29,7 @@ services:
 
   mongodb:
     image: mongo:latest
-    container_name: mongodb
+    container_name: ag-stellargather-mongodb
     ports:
       - 27017:27017
     volumes:
@@ -39,7 +39,7 @@ services:
 
   mongo-express:
     image: mongo-express:latest
-    container_name: mongo-express
+    container_name: ag-stellargather-mongo-express
     environment:
       ME_CONFIG_MONGODB_SERVER: mongodb
       ME_CONFIG_MONGODB_ADMINPASSWORD: password  
@@ -58,7 +58,7 @@ services:
     build:
       context: ./sql_api
       dockerfile: Dockerfile
-    container_name: stellar_gather_sql_api
+    container_name: ag-stellargather-sql-api
     ports:
       - "8010:8010"
     environment:
@@ -75,7 +75,7 @@ services:
     build:
       context: ./nosql_api
       dockerfile: Dockerfile
-    container_name: stellar_gather_nosql_api
+    container_name: ag-stellargather-nosql-api
     environment:
       - MONGODB_URL=mongodb://mongodb:27017/
     ports:
@@ -87,7 +87,7 @@ services:
   
   apache:
     image: httpd:latest
-    container_name: apache-server
+    container_name: ag-stellargather-apache-server
     ports:
       - "8013:80"
     volumes:
