@@ -15,7 +15,7 @@ app = FastAPI(
     contact={"email": "support@stellargather.com"},
     license_info={
         "name": "Apache 2.0",
-        "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+        "url": "https://www.apache.org/licenses/LICENSE-2.0.html"
     },
 )
 
