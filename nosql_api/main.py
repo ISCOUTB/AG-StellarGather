@@ -1,12 +1,10 @@
 import os
-from fastapi import FastAPI, HTTPException, status
+from fastapi import FastAPI, HTTPException, status, Query
 from pydantic import BaseModel, Field
 from typing import List, Optional
 from pymongo import MongoClient
 from datetime import datetime, timezone
 from fastapi.middleware.cors import CORSMiddleware
-
-DIRECTION = "http://localhost"
 
 app = FastAPI(
     title="StellarGather NoSQL Service API",
@@ -20,7 +18,8 @@ app = FastAPI(
 )
 
 origins = [
-    DIRECTION,
+    "http://localhost:8013",
+    "http://129.153.69.231:8013",
 ]
 
 app.add_middleware(
@@ -34,29 +33,18 @@ app.add_middleware(
 client = MongoClient(os.getenv("MONGODB_URL"))
 db = client.stellargather_nosql
 
-# Modelos de datos
-class Comment(BaseModel):
-    commentId: Optional[str] = None
-    userId: str
-    eventId: str
-    commentText: str
-    timestamp: Optional[datetime] = Field(default_factory=lambda: datetime.now(timezone.utc))
-
-class Rating(BaseModel):
-    ratingId: Optional[str] = None
-    userId: str
-    eventId: str
-    ratingValue: int = Field(..., ge=1, le=5)
-
-class Notification(BaseModel):
-    notificationId: Optional[str] = None
-    userId: str
+class ContactMessage(BaseModel):
+    name: str
+    email: str
+    subject: str
     message: str
-    read: bool = False
     timestamp: Optional[datetime] = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class NewsletterSubscriber(BaseModel):
+    email: str
+    subscribed_at: Optional[datetime] = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class Interaction(BaseModel):
-    interactionId: Optional[str] = None
     userId: str
     eventId: str
     interactionType: str
@@ -65,7 +53,6 @@ class Interaction(BaseModel):
     timestamp: Optional[datetime] = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class Error(BaseModel):
-    errorId: Optional[str] = None
     errorMessage: str
     errorCode: int
     service: str
@@ -74,54 +61,62 @@ class Error(BaseModel):
     userImpact: bool
     timestamp: Optional[datetime] = Field(default_factory=lambda: datetime.now(timezone.utc))
 
-@app.get("/test_connection", tags=["test"])
-def test_connection():
-    try:
-        db.list_collection_names()
-        return {"message": "Conexión exitosa a MongoDB"}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error de conexión: {e}")
+@app.get("/", tags=["status"])
+def read_root():
+    return {"message": "API working correctly"}
 
-
-# Endpoints para Comentarios
-@app.post("/comments", response_model=Comment, status_code=status.HTTP_201_CREATED, tags=["comments"])
-def create_comment(comment: Comment):
-    result = db.comments.insert_one(comment.model_dump())
+# Endpoints para Mensajes de Contacto
+@app.post("/contact", response_model=ContactMessage, status_code=status.HTTP_201_CREATED, tags=["contact"])
+def create_contact_message(contact_message: ContactMessage):
+    result = db.contact_messages.insert_one(contact_message.model_dump())
     if not result.inserted_id:
-        raise HTTPException(status_code=400, detail="Comentario no creado")
-    comment.commentId = str(result.inserted_id)
-    return comment
+        raise HTTPException(status_code=400, detail="Mensaje de contacto no creado")
+    return contact_message
 
-@app.get("/comments", response_model=List[Comment], tags=["comments"])
-def get_comments_by_event(event_id: str):
-    comments = list(db.comments.find({"eventId": event_id}))
-    if not comments:
-        raise HTTPException(status_code=404, detail="Comentarios no encontrados para el evento")
-    return [Comment(**comment) for comment in comments]
+@app.get("/contact", response_model=List[ContactMessage], tags=["contact"])
+def get_contact_messages(
+    limit: int = Query(20, ge=1),
+    offset: int = Query(0, ge=0)
+):
+    contact_messages = list(db.contact_messages.find().sort("timestamp", -1).skip(offset).limit(limit))
+    
+    if not contact_messages:
+        raise HTTPException(status_code=404, detail="No se encontraron mensajes de contacto")
+    
+    return [ContactMessage(**message) for message in contact_messages]
 
-# Endpoints para Calificaciones
-@app.post("/ratings", status_code=status.HTTP_201_CREATED, tags=["comments"])
-def rate_event(rating: Rating):
-    result = db.ratings.insert_one(rating.model_dump())
+@app.get("/contact/count", tags=["contact"])
+def count_contact_messages():
+    count = db.contact_messages.count_documents({})
+    return {"count": count}
+
+# Endpoints para Suscriptores del Boletín
+@app.post("/newsletter", response_model=NewsletterSubscriber, status_code=status.HTTP_201_CREATED, tags=["newsletter"])
+def subscribe_newsletter(subscriber: NewsletterSubscriber):
+    existing_subscriber = db.newsletter_subscribers.find_one({"email": subscriber.email})
+    if existing_subscriber:
+        raise HTTPException(status_code=400, detail="El correo ya está suscrito")
+    result = db.newsletter_subscribers.insert_one(subscriber.model_dump())
     if not result.inserted_id:
-        raise HTTPException(status_code=400, detail="Calificación no registrada")
-    return {"message": "Calificación registrada exitosamente"}
+        raise HTTPException(status_code=400, detail="Suscripción no creada")
+    return subscriber
 
-# Endpoints para Notificaciones
-@app.post("/notifications", response_model=Notification, status_code=status.HTTP_201_CREATED, tags=["notifications"])
-def create_notification(notification: Notification):
-    result = db.notifications.insert_one(notification.model_dump())
-    if not result.inserted_id:
-        raise HTTPException(status_code=400, detail="Notificación no creada")
-    notification.notificationId = str(result.inserted_id)
-    return notification
+@app.get("/newsletter", response_model=List[NewsletterSubscriber], tags=["newsletter"])
+def get_newsletter_subscribers(
+    limit: int = Query(20, ge=1),
+    offset: int = Query(0, ge=0)
+):
+    subscribers = list(db.newsletter_subscribers.find().sort("subscribed_at", -1).skip(offset).limit(limit))
+    
+    if not subscribers:
+        raise HTTPException(status_code=404, detail="No se encontraron suscriptores")
+    
+    return [NewsletterSubscriber(**subscriber) for subscriber in subscribers]
 
-@app.get("/notifications", response_model=List[Notification], tags=["notifications"])
-def get_notifications(user_id: str):
-    notifications = list(db.notifications.find({"userId": user_id}))
-    if not notifications:
-        raise HTTPException(status_code=404, detail="No se encontraron notificaciones para el usuario")
-    return [Notification(**notification) for notification in notifications]
+@app.get("/newsletter/count", tags=["newsletter"])
+def count_newsletter_subscribers():
+    count = db.newsletter_subscribers.count_documents({})
+    return {"count": count}
 
 # Endpoints para Interacciones
 @app.post("/interactions", status_code=status.HTTP_201_CREATED, tags=["interactions"])
