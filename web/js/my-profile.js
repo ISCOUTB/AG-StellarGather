@@ -56,7 +56,15 @@ document.addEventListener("DOMContentLoaded", function () {
                 document.getElementById("username").innerText = user.username;
                 document.getElementById("full-name").innerText = user.full_name;
                 document.getElementById("email").innerText = user.email;
-                document.getElementById("gender").innerText = user.gender === 'male' ? 'Masculino' : user.gender === 'female' ? 'Femenino' : 'No especificado';
+                let genderText;
+                if (user.gender === 'male') {
+                    genderText = 'Masculino';
+                } else if (user.gender === 'female') {
+                    genderText = 'Femenino';
+                } else {
+                    genderText = 'No especificado';
+                }
+                document.getElementById("gender").innerText = genderText;
                 document.getElementById("country").innerText = user.country || 'No especificado';
                 document.getElementById("phone-number").innerText = user.phone_number || 'No disponible';
                 document.getElementById("birth-date").innerText = user.birth_date || 'No especificado';
@@ -110,11 +118,14 @@ document.addEventListener("DOMContentLoaded", function () {
         event.preventDefault(); // Evitar el envío por defecto del formulario
 
         // Obtener los datos actuales del usuario
+        const genderText = document.getElementById("gender").innerText;
+        const genderFinal = genderText === 'Masculino' ? 'male' : genderText === 'Femenino' ? 'female' : '';
+
         const currentUserData = {
             username: document.getElementById("username").innerText,
             email: document.getElementById("email").innerText,
             full_name: document.getElementById("full-name").innerText,
-            gender: document.getElementById("gender").innerText === 'Masculino' ? 'male' : document.getElementById("gender").innerText === 'Femenino' ? 'female' : '',
+            gender: genderFinal,
             country: document.getElementById("country").innerText,
             phone_number: document.getElementById("phone-number").innerText,
             birth_date: document.getElementById("birth-date").innerText,
@@ -196,7 +207,15 @@ document.addEventListener("DOMContentLoaded", function () {
                 document.getElementById("username").innerText = updatedData.username;
                 document.getElementById("full-name").innerText = updatedData.full_name;
                 document.getElementById("email").innerText = updatedData.email;
-                document.getElementById("gender").innerText = updatedData.gender === 'male' ? 'Masculino' : updatedData.gender === 'female' ? 'Femenino' : 'No especificado';
+                let updatedGenderText;
+                if (updatedData.gender === 'male') {
+                    updatedGenderText = 'Masculino';
+                } else if (updatedData.gender === 'female') {
+                    updatedGenderText = 'Femenino';
+                } else {
+                    updatedGenderText = 'No especificado';
+                }
+                document.getElementById("gender").innerText = updatedGenderText;
                 document.getElementById("country").innerText = updatedData.country || 'No especificado';
                 document.getElementById("phone-number").innerText = updatedData.phone_number || 'No disponible';
                 document.getElementById("birth-date").innerText = updatedData.birth_date || 'No especificado';
@@ -296,7 +315,6 @@ document.addEventListener("DOMContentLoaded", function () {
             });
 
             if (updateResponse.ok) {
-                const result = await updateResponse.json();
                 createSuccessModal("Contraseña actualizada correctamente");
                 document.getElementById("current-password").value = '';
                 document.getElementById("new-password").value = '';

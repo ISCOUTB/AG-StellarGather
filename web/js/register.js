@@ -65,7 +65,7 @@ function validatePassword(password) {
         errors.push('La contraseña debe incluir al menos una letra minúscula.');
     }
     // Verificar la presencia de números
-    if (!/[0-9]/.test(password)) {
+    if (!/\d/.test(password)) {
         errors.push('La contraseña debe incluir al menos un número.');
     }
     // Verificar la presencia de símbolos especiales

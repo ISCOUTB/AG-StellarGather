@@ -45,7 +45,7 @@
 
     // Modal Video
     $(document).ready(function () {
-        var $videoSrc;
+        let $videoSrc;
         
         $('.btn-play').click(function () {
             $videoSrc = $(this).data("src");
@@ -93,7 +93,7 @@
 
 
     // Portfolio isotope and filter
-    var portfolioIsotope = $('.portfolio-container').isotope({
+    let portfolioIsotope = $('.portfolio-container').isotope({
         itemSelector: '.portfolio-item',
         layoutMode: 'fitRows'
     });

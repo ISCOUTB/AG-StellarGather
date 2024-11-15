@@ -37,7 +37,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     return;
                 }
 
-                const data = await response.json();
                 createSuccessModal("¡Te has suscrito con éxito al boletín! Gracias por unirte.");
                 document.getElementById('emailInput').value = '';
             } catch (error) {

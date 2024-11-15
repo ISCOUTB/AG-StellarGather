@@ -54,7 +54,7 @@ function loadEventDetailed() {
         })
         .then(response => {
             if (!response.ok) {
-                return [];
+            return { available_slots: 0 };
             }
             return response.json();
         })
@@ -68,13 +68,11 @@ function loadEventDetailed() {
             fetch(`${API_BASE_URL}/registrations/check/${userId}/${eventId}`)
                 .then(response => {
                     if (!response.ok) {
-                        if (response.status === 404) {
-                            return false; // Usuario no registrado
-                        }
-                        throw new Error('Error al verificar el registro');
+                        return response.status === 404 ? false : false;
                     }
-                    return response.json().then(() => true); // Usuario registrado
-                })
+                    // Si la respuesta es 'OK', asumimos que el usuario está registrado
+                    return true;
+                })     
                 .then(isRegistered => {
                     // Actualizar el botón de registro
                     const registerButtonDiv = document.getElementById('register-button');
@@ -83,13 +81,25 @@ function loadEventDetailed() {
                         `<button class="btn btn-secondary btn-lg mr-2 disabled">Ya estás registrado</button> 
                         <a href="../my-registers.html" class="btn btn-primary btn-lg mt-2 mt-md-0">Ver Mis Registros</a>`;
                     } else {
-                        registerButtonDiv.innerHTML = `<a href="#" class="btn btn-secondary btn-lg" onclick="handleRegisterEvent(event, '${eventId}')">Registrarme Ahora</a>`;
+                        registerButtonDiv.innerHTML = `<a href="#" class="btn btn-secondary btn-lg" id="register-now">Registrarme Ahora</a>`;
+                        
+                        // Asignar el evento de clic programáticamente
+                        const registerNowButton = document.getElementById('register-now');
+                        registerNowButton.addEventListener('click', function(event) {
+                            handleRegisterEvent(event, eventId);
+                        });
                     }
                 })
                 .catch(error => {
                     const registerButtonDiv = document.getElementById('register-button');
                     // En caso de error, asumimos que no está registrado
-                    registerButtonDiv.innerHTML = `<a href="#" class="btn btn-secondary btn-lg" onclick="handleRegisterEvent(event, '${eventId}')">Registrarme Ahora</a>`;
+                    registerButtonDiv.innerHTML = `<a href="#" class="btn btn-secondary btn-lg" id="register-now">Registrarme Ahora</a>`;
+                    
+                    // Asignar el evento de clic programáticamente
+                    const registerNowButton = document.getElementById('register-now');
+                    registerNowButton.addEventListener('click', function(event) {
+                        handleRegisterEvent(event, eventId);
+                    });
                 });
 
             // Continuar con la solicitud de categorías y otros detalles...

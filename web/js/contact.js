@@ -46,14 +46,12 @@ document.addEventListener('DOMContentLoaded', function () {
             });
 
             if (response.ok) {
-                // Si la respuesta es exitosa (código 200-299)
-                const data = await response.json();
+                // Si la respuesta es exitosa
                 createSuccessModal('Gracias por tu mensaje, nos pondremos en contacto contigo pronto.');
                 // Reiniciar el formulario
                 contactForm.reset();
             } else {
                 // Si la respuesta es un error
-                const errorData = await response.json();
                 createErrorModal('Error al enviar el mensaje', 'Hubo un problema al enviar tu mensaje. Por favor, intenta nuevamente.');
             }
         } catch (error) {

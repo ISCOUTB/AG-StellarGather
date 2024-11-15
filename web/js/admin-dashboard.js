@@ -15,9 +15,9 @@ async function fetchAndDisplayStatistics(userQuestion) {
         const data = await response.json();
 
         // Limpiar los contenedores previos
-        answerContainer = document.getElementById('answer-container')
+        const answerContainer = document.getElementById('answer-container')
         answerContainer.innerHTML = '';
-        tableContainer = document.getElementById('table-container')
+        const tableContainer = document.getElementById('table-container')
         tableContainer.innerHTML = '';
         
         if(data.image_base64) {
