@@ -2,3 +2,9 @@ fastapi
 uvicorn
 mysql-connector-python
 passlib
+bcrypt
+email-validator
+openai===1.54.3
+pandas
+numpy
+matplotlib
