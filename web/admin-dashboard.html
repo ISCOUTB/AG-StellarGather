@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="utf-8">
+    <title>StellarGather - Admin Dashboard</title>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <meta content="Free HTML Templates" name="keywords">
+    <meta content="Free HTML Templates" name="description">
+
+    <!-- Favicon -->
+    <link href="img/logo-stellargather.ico" rel="icon">
+
+    <!-- Google Web Fonts -->
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+
+    <!-- Libraries Stylesheet -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.2.1/assets/owl.carousel.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.10.0/css/lightbox.min.css" rel="stylesheet">
+
+    <!-- Customized Bootstrap Stylesheet -->
+    <link href="css/style.css" rel="stylesheet">
+
+    <!-- Javascript -->
+    <script src="js/auth.js" defer></script>
+
+    <style>
+        body {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header Start -->
+    <div data-include="template-parts/header.html"></div>
+    <!-- Header End -->
+
+    <!-- Page Header Start -->
+    <div class="container-fluid bg-primary mb-5">
+        <div class="container">
+            <div class="row align-items-center py-4">
+                <div class="col-md-6 text-center text-md-left">
+                    <h1 class="display-5 mb-4 mb-md-0 text-primary text-uppercase">Admin Dashboard</h1>
+                </div>
+                <div class="col-md-6 text-center text-md-right">
+                    <div class="d-inline-flex align-items-center">
+                        <a class="btn btn-sm btn-outline-light" href="/">Home</a>
+                        <i class="fas fa-angle-double-right text-light mx-2"></i>
+                        <a class="btn btn-sm btn-outline-light disabled" href="">Admin Dashboard</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Page Header End -->
+
+    <!-- Dashboard Start -->
+    <div class="container">
+        <h2 class="text-center mb-5" id="greeting"></h2>
+        <!-- Estadísticas Generales -->
+        <div class="row">
+            <!-- Total de Comentarios -->
+            <div class="col-lg-4 mb-4">
+                <div class="card text-center bg-info text-light">
+                    <div class="card-body">
+                        <h5 class="card-title">Total de Comentarios</h5>
+                        <p id="total-comments" class="display-4">0</p>
+                    </div>
+                </div>
+            </div>
+            <!-- Promedio de Calificación -->
+            <div class="col-lg-4 mb-4">
+                <div class="card text-center bg-success text-light">
+                    <div class="card-body">
+                        <h5 class="card-title">Promedio de Calificación</h5>
+                        <p id="avg-rating" class="display-4">0</p>
+                    </div>
+                </div>
+            </div>
+            <!-- Promedio de Calificación -->
+            <div class="col-lg-4 mb-4">
+                <div class="card text-center bg-success text-light">
+                    <div class="card-body">
+                        <h5 class="card-title">Promedio de Calificación</h5>
+                        <p id="avg-rating" class="display-4">0</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+    <!-- Dashboard End -->
+    
+
+    <!-- Creation Panel Start -->
+    <div class="container-fluid py-5">
+        <div class="container">
+            <!-- Create Event -->
+            <div class="mb-5">
+                <h3 class="mb-4 section-title">Crear Evento</h3>
+                <form id="create-event-form" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="event-name" class="font-weight-medium">
+                            <i class="fas fa-calendar-alt text-secondary mr-2"></i>Nombre del Evento:
+                        </label>
+                        <input type="text" id="event-name" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="event-description" class="font-weight-medium">
+                            <i class="fas fa-info-circle text-secondary mr-2"></i>Descripción:
+                        </label>
+                        <textarea id="event-description" class="form-control" required></textarea>
+                        <small id="description-help" class="form-text text-muted">
+                            La descripción debe tener al menos 250 caracteres, incluyendo espacios.
+                        </small>
+                    </div>
+                    <div class="mb-3">
+                        <label for="event-country" class="font-weight-medium">
+                            <i class="fas fa-globe-americas text-secondary mr-2"></i>País:
+                        </label>
+                        <select id="event-country" class="form-control" required>
+                            <option value="" disabled selected>Seleccione un país</option>
+                            <!-- Los países se cargarán dinámicamente aquí -->
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="event-city" class="font-weight-medium">
+                            <i class="fas fa-city text-secondary mr-2"></i>Ciudad:
+                        </label>
+                        <input type="text" id="event-city" class="form-control" required>
+                        <small class="form-text text-muted">Escribe la ciudad del evento.</small>
+                    </div>
+                    <div class="mb-3">
+                        <label for="event-location" class="font-weight-medium">
+                            <i class="fas fa-map-marker-alt text-secondary mr-2"></i>Ubicación:
+                        </label>
+                        <input type="text" id="event-location" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="event-date" class="font-weight-medium">
+                            <i class="fas fa-calendar-check text-secondary mr-2"></i>Fecha y hora:
+                        </label>
+                        <input type="datetime-local" id="event-date" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="event-capacity" class="font-weight-medium">
+                            <i class="fas fa-users text-secondary mr-2"></i>Capacidad Máxima:
+                        </label>
+                        <input type="number" id="event-capacity" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="event-price" class="font-weight-medium">
+                            <i class="fas fa-dollar-sign text-secondary mr-2"></i>Precio:
+                        </label>
+                        <input type="number" id="event-price" class="form-control" step="0.01" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="event-organizer" class="font-weight-medium">
+                            <i class="fas fa-user-tie text-secondary mr-2"></i>Organizador:
+                        </label>
+                        <select id="event-organizer" class="form-control" required>
+                            <option value="" disabled selected>Seleccione un organizador</option>
+                            <!-- Los organizadores se cargarán dinámicamente aquí -->
+                        </select>
+                    </div>                    
+                    <!-- Sección de Categorías -->
+                    <div class="mb-3">
+                        <label for="event-category" class="font-weight-medium">
+                            <i class="fas fa-tags text-secondary mr-2"></i>Categorías:
+                        </label>
+                        <select id="event-category" class="form-control" multiple required>
+                            <!-- Las categorías se cargarán dinámicamente aquí -->
+                        </select>
+                        <small id="category-help" class="form-text text-muted">
+                            Puedes seleccionar hasta dos categorías (CMD + Click en Mac).
+                        </small>
+                    </div>
+                    <div class="mb-3">
+                        <label for="event-image" class="font-weight-medium">
+                            <i class="fas fa-image text-secondary mr-2"></i>Imagen del Evento:
+                        </label>
+                        <input type="file" id="event-image" class="form-control" accept="image/webp" required>
+                        <small id="image-help" class="form-text text-muted">
+                            La imagen debe tener un tamaño de 600x400 píxeles y debe ser en formato .webp.
+                        </small>
+                    </div>                                       
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-primary">Crear Evento</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Create Category -->
+            <div class="mb-5">
+                <h3 class="mb-4 section-title">Crear Categoría</h3>
+                <form id="create-category-form">
+                    <div class="mb-3">
+                        <label for="category-name" class="font-weight-medium"><i class="fas fa-tags text-secondary mr-2"></i>Nombre de la Categoría:</label>
+                        <input type="text" id="category-name" class="form-control" required>
+                    </div>
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-primary">Crear Categoría</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Create Organizer -->
+            <div class="mb-5">
+                <h3 class="mb-4 section-title">Crear Organizador</h3>
+                <form id="create-organizer-form">
+                    <div class="mb-3">
+                        <label for="organizer-name" class="font-weight-medium"><i class="fas fa-user-circle text-secondary mr-2"></i>Nombre del Organizador:</label>
+                        <input type="text" id="organizer-name" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="organizer-email" class="font-weight-medium"><i class="fas fa-envelope text-secondary mr-2"></i>Correo Electrónico:</label>
+                        <input type="email" id="organizer-email" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="organizer-phone" class="font-weight-medium"><i class="fas fa-phone-alt text-secondary mr-2"></i>Teléfono:</label>
+                        <input type="text" id="organizer-phone" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label for="organizer-image" class="font-weight-medium">
+                            <i class="fas fa-image text-secondary mr-2"></i>Imagen del Organizador:
+                        </label>
+                        <input type="file" id="organizer-image" class="form-control" accept="image/webp" required>
+                        <small id="image-help" class="form-text text-muted">
+                            La imagen debe tener un tamaño de 100x100 píxeles y debe ser en formato .webp.
+                        </small>
+                    </div>   
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-primary">Crear Organizador</button>
+                    </div>
+                </form>
+            </div>
+
+        </div>
+    </div>
+    <!-- Creation Panel End -->
+
+    <!-- Preguntás Dinámicas API (v1.0) -->
+    <div class="container mt-5">
+        <h3 class="mb-4 section-title">Datos dinámicos (v1.0)</h3>
+        <div class="row">
+            <!-- Sección para ingresar la pregunta -->
+            <div class="col-lg-12 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">¿Qué estadística deseas saber?</h5>
+                        <!-- Campo de texto para la pregunta -->
+                        <input type="text" id="user-question" class="form-control" placeholder="Escribe tu pregunta aquí...">
+                        <button class="btn btn-primary mt-3 mb-3" id="submit-question-btn">Enviar Pregunta</button>
+                        <p>*Debe esperar unos segundos para recibir la respuesta</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Sección para mostrar la respuesta -->
+        <div class="col-lg-12" id="answer-container"></div>
+        <div class="col-lg-12" id="table-container"></div>
+    </div>
+
+    <!-- Footer Start -->
+    <div data-include="../template-parts/footer.html"></div>
+    <!-- Footer End -->
+
+    <!-- JavaScript Libraries -->
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.4.1/jquery.easing.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/waypoints/4.0.1/jquery.waypoints.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery.counterup@2.1.0/jquery.counterup.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.2.1/owl.carousel.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.isotope/3.0.5/isotope.pkgd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.10.0/js/lightbox.min.js"></script>
+
+
+    <!-- Template Javascript -->
+    <script src="../js/include.js"></script>
+    <script src="js/admin-dashboard.js" type="module"></script>
+</body>
+
+</html>

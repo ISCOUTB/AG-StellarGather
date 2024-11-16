@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="utf-8">
+    <title>StellarGather - Mi Perfil</title>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <meta content="Free HTML Templates" name="keywords">
+    <meta content="Free HTML Templates" name="description">
+
+    <!-- Favicon -->
+    <link href="img/logo-stellargather.ico" rel="icon">
+
+    <!-- Google Web Fonts -->
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+
+    <!-- Libraries Stylesheet -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.2.1/assets/owl.carousel.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.10.0/css/lightbox.min.css" rel="stylesheet">
+
+    <!-- Customized Bootstrap Stylesheet -->
+    <link href="css/style.css" rel="stylesheet">
+
+    <!-- Javascript -->
+    <script src="js/auth.js" defer></script>
+    <script src="js/my-profile.js" defer type="module"></script>
+
+    <style>
+        body {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header Start -->
+    <div data-include="template-parts/header.html"></div>
+    <!-- Header End -->
+
+    <!-- Page Header Start -->
+    <div class="container-fluid bg-primary mb-5">
+        <div class="container">
+            <div class="row align-items-center py-4">
+                <div class="col-md-6 text-center text-md-left">
+                    <h1 class="display-4 mb-4 mb-md-0 text-primary text-uppercase">Mi Perfil</h1>
+                </div>
+                <div class="col-md-6 text-center text-md-right">
+                    <div class="d-inline-flex align-items-center">
+                        <a class="btn btn-sm btn-outline-light" href="/">Home</a>
+                        <i class="fas fa-angle-double-right text-light mx-2"></i>
+                        <a class="btn btn-sm btn-outline-light disabled" href="">Mi Perfil</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Page Header End -->
+
+    <!-- Profile Start -->
+    <div class="container-fluid py-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8">
+                    <!-- User Information Start -->
+                    <div class="mb-5">
+                        <h3 class="mb-4 section-title">Información del Usuario</h3>
+                
+                        <div class="mb-3">
+                            <label for="username" class="font-weight-medium"><i class="fas fa-user-circle text-secondary mr-2"></i>Nombre de Usuario:</label>
+                            <span id="username"></span>
+                        </div>
+                
+                        <div class="mb-3">
+                            <label for="full-name" class="font-weight-medium"><i class="fas fa-id-card text-secondary mr-2"></i>Nombre Completo:</label>
+                            <span id="full-name"></span>
+                        </div>
+                
+                        <div class="mb-3">
+                            <label for="email" class="font-weight-medium"><i class="fas fa-envelope text-secondary mr-2"></i>Correo Electrónico:</label>
+                            <span id="email"></span>
+                        </div>
+                
+                        <div class="mb-3">
+                            <label for="gender" class="font-weight-medium"><i class="fas fa-venus-mars text-secondary mr-2"></i>Género:</label>
+                            <span id="gender"></span>
+                        </div>
+                
+                        <div class="mb-3">
+                            <label for="country" class="font-weight-medium"><i class="fas fa-map-marker-alt text-secondary mr-2"></i>País:</label>
+                            <span id="country"></span>
+                        </div>
+                
+                        <div class="mb-3">
+                            <label for="phone-number" class="font-weight-medium"><i class="fas fa-phone-alt text-secondary mr-2"></i>Teléfono:</label>
+                            <span id="phone-number"></span>
+                        </div>
+                
+                        <div class="mb-3">
+                            <label for="birth-date" class="font-weight-medium"><i class="fas fa-calendar-alt text-secondary mr-2"></i>Fecha de Nacimiento:</label>
+                            <span id="birth-date"></span>
+                        </div>
+                
+                        <div class="mb-3">
+                            <label for="created-at" class="font-weight-medium"><i class="fas fa-calendar-check text-secondary mr-2"></i>Fecha de Registro:</label>
+                            <span id="created-at"></span>
+                        </div>
+                
+                        <div class="mb-3">
+                            <label for="updated-at" class="font-weight-medium"><i class="fas fa-sync-alt text-secondary mr-2"></i>Última Actualización:</label>
+                            <span id="updated-at"></span>
+                        </div>
+                    </div>
+                    <!-- User Information End -->
+                
+                    <!-- Edit User Information Start -->
+                    <div class="bg-light rounded p-5">
+                        <h3 class="mb-4 section-title">Editar Información</h3>
+                        <form id="edit-user-form">
+                            <div class="mb-3">
+                                <label for="edit-username" class="font-weight-medium"><i class="fas fa-user-circle text-secondary mr-2"></i>Nombre de Usuario:</label>
+                                <input type="text" id="edit-username" class="form-control" required>
+                            </div>
+                
+                            <div class="mb-3">
+                                <label for="edit-full-name" class="font-weight-medium"><i class="fas fa-id-card text-secondary mr-2"></i>Nombre Completo:</label>
+                                <input type="text" id="edit-full-name" class="form-control" required>
+                            </div>
+                
+                            <div class="mb-3">
+                                <label for="edit-email" class="font-weight-medium"><i class="fas fa-envelope text-secondary mr-2"></i>Correo Electrónico:</label>
+                                <input type="email" id="edit-email" class="form-control" required>
+                            </div>
+                
+                            <div class="mb-3">
+                                <label for="edit-gender" class="font-weight-medium"><i class="fas fa-venus-mars text-secondary mr-2"></i>Género:</label>
+                                <select id="edit-gender" class="form-control">
+                                    <option value="" disabled selected>Seleccione una opción</option>
+                                    <option value="male">Masculino</option>
+                                    <option value="female">Femenino</option>
+                                </select>
+                            </div>
+                
+                            <div class="mb-3">
+                                <label for="edit-country" class="font-weight-medium"><i class="fas fa-map-marker-alt text-secondary mr-2"></i>País:</label>
+                                <select id="edit-country" class="form-control">
+                                    <option value="" disabled selected>Selecciona un país</option>
+                                </select>
+                            </div>
+                
+                            <div class="mb-3">
+                                <label for="edit-phone-number" class="font-weight-medium"><i class="fas fa-phone-alt text-secondary mr-2"></i>Teléfono:</label>
+                                <input type="text" id="edit-phone-number" class="form-control">
+                            </div>
+                
+                            <div class="mb-3">
+                                <label for="edit-birth-date" class="font-weight-medium"><i class="fas fa-calendar-alt text-secondary mr-2"></i>Fecha de Nacimiento:</label>
+                                <input type="date" id="edit-birth-date" class="form-control">
+                            </div>
+                
+                            <div class="text-center">
+                                <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                            </div>
+                        </form>
+                    </div>
+                    <!-- Edit User Information End -->
+
+                    <!-- Change Password Start -->
+                    <div class="bg-light rounded p-5 mt-5">
+                        <h3 class="mb-4 section-title">Cambiar Contraseña</h3>
+                        <form id="change-password-form">
+                            <div class="mb-3">
+                                <label for="current-password" class="font-weight-medium"><i class="fas fa-lock text-secondary mr-2"></i>Contraseña Actual:</label>
+                                <div class="input-group">
+                                    <input type="password" id="current-password" class="form-control" required>
+                                    <div class="input-group-append">
+                                        <span class="input-group-text" id="toggle-current-password">
+                                            <i class="fas fa-eye"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                    
+                            <div class="mb-3">
+                                <label for="new-password" class="font-weight-medium"><i class="fas fa-lock text-secondary mr-2"></i>Nueva Contraseña:</label>
+                                <div class="input-group">
+                                    <input type="password" id="new-password" class="form-control" required>
+                                    <div class="input-group-append">
+                                        <span class="input-group-text" id="toggle-new-password">
+                                            <i class="fas fa-eye"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                    
+                            <div class="mb-3">
+                                <label for="confirm-password" class="font-weight-medium"><i class="fas fa-lock text-secondary mr-2"></i>Confirmar Nueva Contraseña:</label>
+                                <div class="input-group">
+                                    <input type="password" id="confirm-password" class="form-control" required>
+                                    <div class="input-group-append">
+                                        <span class="input-group-text" id="toggle-confirm-password">
+                                            <i class="fas fa-eye"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Indicador de Seguridad -->
+                            <div id="password-strength-container">
+                                <small id="password-strength-text" class="form-text text-muted">La contraseña debe tener al menos 8 caracteres e incluir mayúsculas, minúsculas, números y símbolos.</small>
+                                <div id="password-strength-bar" class="progress">
+                                    <div id="password-strength-fill" class="progress-bar progress-bar-striped" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                            </div>
+                    
+                            <div class="text-center">
+                                <button type="submit" class="btn btn-secondary mt-4" id="submit-btn" disabled>Guardar Cambios</button>
+                            </div>
+                        </form>
+                    </div>
+                    <!-- Change Password End -->
+                </div>
+                <div class="col-lg-4 mt-3 mt-lg-0 order-first order-lg-last">
+                    <div class="d-flex flex-column text-center bg-secondary rounded mb-5 py-5 px-4">
+                        <h5 class="text-light">Hola, Bienvenido</h5>
+                        <p class="text-light">A tu perfil personal</p>
+                        <div class="profile-photo text-center">
+                            <img id="profile-photo" src="" alt="Foto de Perfil" class="img-fluid rounded-circle" width="150">
+                        </div>
+                        <h5 class="text-light mt-3" id="profile-name"></h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Profile End -->
+
+    <!-- Footer Start -->
+    <div data-include="template-parts/footer.html"></div>
+    <!-- Footer End -->
+
+    <!-- Back to Top -->
+    <a href="#" class="btn btn-primary px-3 back-to-top"><i class="fa fa-angle-double-up"></i></a>
+
+    <!-- JavaScript Libraries -->
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.4.1/jquery.easing.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/waypoints/4.0.1/jquery.waypoints.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery.counterup@2.1.0/jquery.counterup.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.2.1/owl.carousel.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.isotope/3.0.5/isotope.pkgd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.10.0/js/lightbox.min.js"></script>
+
+    <!-- Template Javascript -->
+    <script src="js/main.js"></script>
+    <script src="js/include.js"></script>
+
+    <!-- CSS para el indicador de seguridad -->
+    <style>
+        #password-strength-container {
+            margin-top: 15px;
+        }
+        
+        #password-strength-bar {
+            height: 10px;
+            margin-top: 5px;
+        }
+
+        .progress-bar {
+            transition: width 0.3s;
+        }
+
+        .invalid {
+            color: #dc3545;
+        }
+
+        .valid {
+            color: #28a745;
+        }
+    </style>
+    <script>
+        function updateAuthLinks() {
+            const isLoggedIn = localStorage.getItem('authToken');
+            if (!isLoggedIn) {
+                const currentUrl = window.location.pathname;
+                window.location.href = `login.html?redirect=${encodeURIComponent(currentUrl)}`;
+            } else {
+                document.body.style.display = 'block';
+            }
+        }
+        window.onload = updateAuthLinks;
+    </script>
+    <script>
+        const newPasswordInput = document.getElementById("new-password");
+        const confirmPasswordInput = document.getElementById("confirm-password");
+        const passwordStrengthBar = document.getElementById("password-strength-fill");
+        const passwordStrengthText = document.getElementById("password-strength-text");
+        const submitButton = document.getElementById("submit-btn");
+    
+        const passwordRequirements = {
+            minLength: 8,
+            hasUpperCase: /[A-Z]/,
+            hasLowerCase: /[a-z]/,
+            hasNumbers: /[0-9]/,
+            hasSpecialChars: /[!@#$%^&*(),.?":{}|<>]/
+        };
+    
+        // Función para evaluar la fortaleza de la contraseña
+        function evaluatePasswordStrength(password) {
+            let strength = 0;
+    
+            // Revisa si cumple con las condiciones
+            if (password.length >= passwordRequirements.minLength) strength += 20;
+            if (passwordRequirements.hasUpperCase.test(password)) strength += 20;
+            if (passwordRequirements.hasLowerCase.test(password)) strength += 20;
+            if (passwordRequirements.hasNumbers.test(password)) strength += 20;
+            if (passwordRequirements.hasSpecialChars.test(password)) strength += 20;
+    
+            return strength;
+        }
+    
+        // Mostrar el progreso de la contraseña
+        function updatePasswordStrength() {
+            const password = newPasswordInput.value;
+            const strength = evaluatePasswordStrength(password);
+    
+            passwordStrengthBar.style.width = strength + "%";
+            passwordStrengthBar.setAttribute("aria-valuenow", strength);
+    
+            if (strength < 40) {
+                passwordStrengthBar.classList.add("bg-danger");
+                passwordStrengthBar.classList.remove("bg-warning", "bg-success");
+                passwordStrengthText.textContent = "La contraseña es débil.";
+                passwordStrengthText.classList.add("invalid");
+                passwordStrengthText.classList.remove("valid");
+            } else if (strength >= 40 && strength < 80) {
+                passwordStrengthBar.classList.add("bg-warning");
+                passwordStrengthBar.classList.remove("bg-danger", "bg-success");
+                passwordStrengthText.textContent = "La contraseña es moderada.";
+                passwordStrengthText.classList.add("valid");
+                passwordStrengthText.classList.remove("invalid");
+            } else {
+                passwordStrengthBar.classList.add("bg-success");
+                passwordStrengthBar.classList.remove("bg-danger", "bg-warning");
+                passwordStrengthText.textContent = "La contraseña es fuerte.";
+                passwordStrengthText.classList.add("valid");
+                passwordStrengthText.classList.remove("invalid");
+            }
+        }
+    
+        // Función para verificar que las contraseñas coincidan
+        function checkPasswordsMatch() {
+            if (newPasswordInput.value === confirmPasswordInput.value) {
+                confirmPasswordInput.classList.add("is-valid");
+                confirmPasswordInput.classList.remove("is-invalid");
+            } else {
+                confirmPasswordInput.classList.add("is-invalid");
+                confirmPasswordInput.classList.remove("is-valid");
+            }
+        }
+    
+        // Habilitar el botón de envío cuando las contraseñas coincidan y sean fuertes
+        function checkFormValidity() {
+            if (newPasswordInput.value && confirmPasswordInput.value && newPasswordInput.value === confirmPasswordInput.value) {
+                submitButton.disabled = false;
+            } else {
+                submitButton.disabled = true;
+            }
+        }
+    
+        // Event listeners
+        newPasswordInput.addEventListener("input", () => {
+            updatePasswordStrength();
+            checkPasswordsMatch();
+            checkFormValidity();
+        });
+    
+        confirmPasswordInput.addEventListener("input", () => {
+            checkPasswordsMatch();
+            checkFormValidity();
+        });
+    </script>
+</body>
+
+</html>

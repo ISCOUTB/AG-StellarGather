@@ -1045,7 +1045,7 @@ def classify_question_with_chatgpt(question: Question):
 
 # Función para generar gráficos
 def generate_graph(data: pd.DataFrame, chart_type: str, x_axis: str, y_axis: str) -> str:
-    ax = plt.subplots()
+    fig, ax = plt.subplots()
 
     if chart_type == 'bar':
         data.plot(kind='bar', ax=ax, x=x_axis, y=y_axis)

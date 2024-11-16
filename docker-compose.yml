@@ -86,12 +86,14 @@ services:
       - ag
   
   apache:
-    image: httpd:latest
+    build: 
+      context: ./web
+      dockerfile: Dockerfile
     container_name: ag-stellargather-apache-server
     ports:
       - "8013:80"
     volumes:
-      - ./web:/usr/local/apache2/htdocs/
+      - ./web:/var/www/html
     networks:
       - ag
 
