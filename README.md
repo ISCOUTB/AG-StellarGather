@@ -3,6 +3,8 @@ StellarGather es una plataforma para descubrir, registrar y gestionar eventos en
 
 StellarGather está basada en microservicios y datos; utiliza tecnologías modernas como **FastAPI**, **MySQL**, **MongoDB**, **Docker** y **Apache con PHP** para ofrecer una experiencia escalable y modular.
 
+[![Quality gate](https://sonarcloud.io/api/project_badges/quality_gate?project=ISCOUTB_AG-StellarGather)](https://sonarcloud.io/summary/new_code?id=ISCOUTB_AG-StellarGather)
+
 ## Arquitectura de la aplicación
 
 La aplicación está dividida en dos microservicios y componentes:
@@ -72,5 +74,5 @@ Puedes interactuar con las APIs en los puertos 8010/8012 (si desea ver los endpo
 
 ## Licencia
 
-Este proyecto está licenciado bajo la Licencia Apache 2.0 - ver el archivo [LICENSE](LICENSE) para más detalles.
+Este proyecto está licenciado bajo GNU Affero General Public License v3.0 - ver el archivo [LICENSE](LICENSE) para más detalles.
 
