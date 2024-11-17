@@ -26,7 +26,7 @@ async function loadEvents(page) {
         const categories = await fetchCategories(event.id);
         const categoriesHtml = categories.map((cat, index) => {
             const separator = index > 0 ? `<span class="text-primary px-2">|</span>` : '';
-            return `${separator}<a class="text-secondary text-uppercase font-weight-medium" href="">${cat.name}</a>`;
+            return `${separator}<a class="text-secondary text-uppercase font-weight-medium" href="events/category.html?category_id=${cat.id}">${cat.name}</a>`;
         }).join('');
 
         const eventDate = new Date(event.date);

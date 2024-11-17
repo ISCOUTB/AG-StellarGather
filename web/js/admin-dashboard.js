@@ -1,9 +1,10 @@
 import { API_BASE_URL, URL_PAGE_BASE } from './config.js';
+import { createSuccessModal, createErrorModal } from './modals.js';
+import { logError, logInteraction } from './interations-errors.js';
 
 // Función para hacer la consulta y mostrar los resultados dinámicamente
 async function fetchAndDisplayStatistics(userQuestion) {
     try {
-        // Realiza la solicitud a la API
         const response = await fetch(`${API_BASE_URL}/generate-statistics-endpoint`, {
             method: 'POST',
             headers: {
@@ -15,9 +16,9 @@ async function fetchAndDisplayStatistics(userQuestion) {
         const data = await response.json();
 
         // Limpiar los contenedores previos
-        answerContainer = document.getElementById('answer-container')
+        const answerContainer = document.getElementById('answer-container')
         answerContainer.innerHTML = '';
-        tableContainer = document.getElementById('table-container')
+        const tableContainer = document.getElementById('table-container')
         tableContainer.innerHTML = '';
         
         if(data.image_base64) {
@@ -29,46 +30,40 @@ async function fetchAndDisplayStatistics(userQuestion) {
         }
     } catch (error) {
         createErrorModal("Error al obtener estadísticas", "Ocurrió un error al intentar obtener las estadísticas. Por favor, intenta de nuevo más tarde.");
+        logError("Error al obtener estadísticas", 500, "API de estadísticas", error.message); // Registro de error
     }
 }
 
 // Función para crear una tabla de conteos generales
 function createCountTable(data) {
-    // Asegurarse de que el contenedor exista
     const tableContainer = document.getElementById('table-container');
     if (!tableContainer) {
         console.error("El contenedor 'table-container' no existe.");
         return;
     }
 
-    // Verificar que la data no esté vacía
     if (!data || data.length === 0) {
         tableContainer.innerHTML = '<p>No hay datos para mostrar.</p>';
         return;
     }
 
-    // Iniciar la tabla HTML
     let tableHTML = `<div class="table-responsive">
         <table class="table">
             <thead>
                 <tr>`;
-    
-    // Crear los encabezados de la tabla dinámicamente a partir de las claves del primer objeto
+
     const headers = Object.keys(data[0]);
     headers.forEach(header => {
-        // Limpiar los encabezados para mejor presentación (por ejemplo, transformarlos de snake_case a título)
         const headerText = header.replace(/_/g, ' ').toUpperCase();
         tableHTML += `<th>${headerText}</th>`;
     });
 
     tableHTML += `</tr></thead><tbody>`;
 
-    // Crear las filas de la tabla a partir de los datos
     data.forEach(item => {
         tableHTML += `<tr>`;
         headers.forEach(header => {
             let value = item[header];
-            // Si el valor es null o vacío, mostramos "Sin valor"
             value = (value === null || value === '') ? 'Sin valor' : value;
             tableHTML += `<td>${value}</td>`;
         });
@@ -76,8 +71,6 @@ function createCountTable(data) {
     });
 
     tableHTML += `</tbody></table></div>`;
-    
-    // Insertar la tabla generada en el contenedor
     tableContainer.innerHTML = tableHTML;
 }
 
@@ -85,6 +78,12 @@ function createCountTable(data) {
 document.getElementById('submit-question-btn').addEventListener('click', () => {
     const question = document.getElementById('user-question').value;
     if (question.trim()) {
+        const startTime = performance.now();
+        fetchAndDisplayStatistics(question).finally(() => {
+            const endTime = performance.now();
+            const duration = endTime - startTime;
+            logInteraction(localStorage.getItem("user_id"), 'fetch-statistics', { question: question }, duration);
+        });
         fetchAndDisplayStatistics(question);
     } else {
         alert("Por favor, escribe una pregunta.");
@@ -92,14 +91,12 @@ document.getElementById('submit-question-btn').addEventListener('click', () => {
 });
 
 document.addEventListener('DOMContentLoaded', function () {
-    // Llamadas a las funciones para cargar datos dinámicamente
-    fetchCategories();       // Obtener categorías
-    fetchCountries();        // Obtener países
-    fetchOrganizers();       // Obtener organizadores
+    fetchCategories();
+    fetchCountries();
+    fetchOrganizers();
 
     const userId = localStorage.getItem("user_id");
 
-    // Verificar si el usuario es administrador
     fetch(`${API_BASE_URL}/users/${userId}/is-admin`)
         .then(response => response.json())
         .then(data => {
@@ -111,10 +108,10 @@ document.addEventListener('DOMContentLoaded', function () {
         })
         .catch(error => {
             console.error("Error:", error);
+            logError("Error de autenticación", 401, "Autenticación", error.message); // Registro de error
             window.location.href = "/";
         });
-    
-    // Obtener el nombre del usuario y mostrar un mensaje de bienvenida
+
     fetch(`${API_BASE_URL}/users/${userId}`)
         .then(response => response.json())
         .then(data => {
@@ -136,10 +133,15 @@ document.addEventListener('DOMContentLoaded', function () {
         })
         .catch(error => {
             console.error('Error fetching user data:', error);
+            logError("Error al obtener datos del usuario", 500, "API de usuarios", error.message); // Registro de error
             document.body.style.display = "block";
         });
     
-    // Evento para crear un organizador
+    fetchGeneralStatistics();
+
+    const today = new Date().toISOString().slice(0, 16);
+    document.getElementById('event-date').setAttribute('min', today);
+    
     const createOrganizerForm = document.getElementById("create-organizer-form");
     createOrganizerForm.addEventListener("submit", async function (e) {
         e.preventDefault();
@@ -149,23 +151,19 @@ document.addEventListener('DOMContentLoaded', function () {
             phone: document.getElementById("organizer-phone").value
         };
         await createOrganizer(organizerData);
-
-        
     });
 
-    // Evento para crear un evento
     const createEventForm = document.getElementById("create-event-form");
     createEventForm.addEventListener("submit", async function (e) {
         e.preventDefault();
-    
-        // Validación de la descripción
+
         const description = document.getElementById("event-description").value.trim();
         if (description.length < 250) {
             createErrorModal("Descripción muy corta", "La descripción del evento debe tener al menos 250 caracteres.");
+            logError("Descripción muy corta", 400, "Creación de evento", "La descripción del evento debe tener al menos 250 caracteres."); // Registro de error
             return;
         }
-    
-        // Crear los datos del evento
+
         const eventData = {
             name: document.getElementById("event-name").value,
             description: document.getElementById("event-description").value,
@@ -177,9 +175,8 @@ document.addEventListener('DOMContentLoaded', function () {
             price: document.getElementById("event-price").value,
             organizer_id: document.getElementById("event-organizer").value, 
         };
-    
+
         try {
-            // Crear el evento en el servidor
             const response = await fetch(`${API_BASE_URL}/events`, {
                 method: 'POST',
                 headers: {
@@ -187,7 +184,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 },
                 body: JSON.stringify(eventData)
             });
-    
+
             const data = await response.json();
             const eventId = data.id;
 
@@ -208,17 +205,18 @@ document.addEventListener('DOMContentLoaded', function () {
                     createSuccessModal("Evento creado con éxito!");
                     setTimeout(() => {
                         location.reload();
-                    }, 3000);
+                    }, 2000);
                 } catch (error) {
                     createErrorModal("Error al asignar categorías", "Ocurrió un error al intentar asignar las categorías al evento. Por favor, intenta de nuevo más tarde.");
+                    logError("Error al asignar categorías", 500, "Creación de evento", error.message); // Registro de error
                 }
             }
         } catch (error) {
             createErrorModal("Error al crear el evento", "Ocurrió un error al intentar crear el evento. Por favor, intenta de nuevo más tarde.");
+            logError("Error al crear evento", 500, "Creación de evento", error.message); // Registro de error
         }
     });    
 
-    // Evento para crear una categoría
     const createCategoryForm = document.getElementById("create-category-form");
     createCategoryForm.addEventListener("submit", async function (e) {
         e.preventDefault();
@@ -247,11 +245,13 @@ async function fetchCategories() {
             const selectedOptions = Array.from(this.selectedOptions);
             if (selectedOptions.length > 2) {
                 createErrorModal("Error al seleccionar categorías", "No puedes seleccionar más de dos categorías para un evento.");
+                logError("Error al seleccionar categorías", 400, "Creación de evento", "Se intentaron seleccionar más de dos categorías.");
                 this.value = selectedOptions.slice(0, 2).map(option => option.value);
             }
         });
     } catch (error) {
         createErrorModal("Error al obtener categorías", "Ocurrió un error al intentar obtener las categorías. Por favor, intenta de nuevo más tarde.");
+        logError("Error al obtener categorías", 500, "API de categorías", error.message); // Registro de error
     }
 }
 
@@ -270,6 +270,7 @@ async function fetchCountries() {
         });
     } catch (error) {
         createErrorModal("Error al obtener países", "Ocurrió un error al intentar obtener los países. Por favor, intenta de nuevo más tarde.");
+        logError("Error al obtener países", 500, "API de países", error.message); // Registro de error
     }
 }
 
@@ -287,6 +288,7 @@ async function fetchOrganizers() {
         });
     } catch (error) {
         createErrorModal("Error al obtener organizadores", "Ocurrió un error al intentar obtener los organizadores. Por favor, intenta de nuevo más tarde.");
+        logError("Error al obtener organizadores", 500, "API de organizadores", error.message); // Registro de error
     }
 }
 
@@ -296,7 +298,6 @@ function getSelectedCategories() {
     const selectedOptions = Array.from(categorySelect.selectedOptions);
     return selectedOptions.map(option => option.value);
 }
-
 
 // Función para crear el organizador
 async function createOrganizer(organizerData) {
@@ -316,12 +317,13 @@ async function createOrganizer(organizerData) {
             createSuccessModal("Organizador creado con éxito!");
             setTimeout(() => {
                 location.reload();
-            }, 3000);
+            }, 2000);
         } else {
-            throw new Error("No se pudo crear el organizador");
+            throw new Error("No se pudo crear el organizador. No puedes crear organizadores duplicados.");
         }
     } catch (error) {
-        createErrorModal("Error al crear el organizador", "Ocurrió un error al intentar crear el organizador. Por favor, intenta de nuevo más tarde.");
+        createErrorModal("Error al crear el organizador", error);
+        logError("Error al crear organizador", 500, "API de organizadores", error.message); // Registro de error
     }
 }
 
@@ -341,12 +343,13 @@ async function createCategory(categoryData) {
             createSuccessModal("Categoría creada con éxito!");
             setTimeout(() => {
                 location.reload();
-            }, 3000);
+            }, 2000);
         } else {
-            throw new Error("No se pudo crear la categoría");
+            throw new Error("No se pudo crear la categoría. No puedes crear categorías duplicadas.");
         }
     } catch (error) {
-        createErrorModal("Error al crear la categoría", "Ocurrió un error al intentar crear la categoría. Por favor, intenta de nuevo más tarde.");
+        createErrorModal("Error al crear la categoría", error);
+        logError("Error al crear categoría", 500, "API de categorías", error.message); // Registro de error
     }
 }
 
@@ -356,9 +359,9 @@ async function uploadEventImage(eventId) {
     const imageFile = imageInput.files[0];
 
     if (imageFile) {
-        // Validación de la imagen
         if (imageFile.type !== "image/webp") {
             createErrorModal("Formato de imagen inválido", "La imagen debe ser en formato .webp.");
+            logError("Formato de imagen inválido", 400, "Subida de imagen", "La imagen no tiene formato webp.");
             return;
         }
 
@@ -366,18 +369,16 @@ async function uploadEventImage(eventId) {
         img.src = URL.createObjectURL(imageFile);
         await img.decode();
 
-        // Validar el tamaño de la imagen (600x400)
         if (img.width !== 600 || img.height !== 400) {
             createErrorModal("Tamaño de imagen incorrecto", "La imagen debe tener un tamaño de 600x400 píxeles.");
+            logError("Tamaño de imagen incorrecto", 400, "Subida de imagen", "La imagen no tiene el tamaño adecuado.");
             return;
         }
 
-        // Crear un FormData para la subida de la imagen
         const formData = new FormData();
         formData.append('image', imageFile);
         formData.append('event_id', eventId);
 
-        // Subir la imagen al servidor
         try {
             const response = await fetch(`${URL_PAGE_BASE}/php/upload-event-image.php`, {
                 method: 'POST',
@@ -389,9 +390,11 @@ async function uploadEventImage(eventId) {
                 console.log("Imagen subida correctamente.");
             } else {
                 createErrorModal("Error al subir la imagen", "Ocurrió un error al intentar subir la imagen. Por favor, intenta de nuevo más tarde.");
+                logError("Error al subir la imagen", 500, "Subida de imagen", result.message); // Registro de error
             }
         } catch (error) {
             createErrorModal("Error al subir la imagen", "Ocurrió un error al intentar subir la imagen. Por favor, intenta de nuevo más tarde.");
+            logError("Error al subir la imagen", 500, "Subida de imagen", error.message); // Registro de error
         }
     }
 }
@@ -402,9 +405,9 @@ async function uploadOrganizerImage(organizerId) {
     const imageFile = imageInput.files[0];
 
     if (imageFile) {
-        // Validación de la imagen
         if (imageFile.type !== "image/webp") {
             createErrorModal("Formato de imagen inválido", "La imagen debe ser en formato .webp.");
+            logError("Formato de imagen inválido", 400, "Subida de imagen", "La imagen no tiene formato webp.");
             return;
         }
 
@@ -412,18 +415,16 @@ async function uploadOrganizerImage(organizerId) {
         img.src = URL.createObjectURL(imageFile);
         await img.decode();
 
-        // Validar el tamaño de la imagen (100x100)
-        if (img.width !== 100 || img.height !== 100) {
+        if (img.width !== 200 || img.height !== 200) {
             createErrorModal("Tamaño de imagen incorrecto", "La imagen debe tener un tamaño de 100x100 píxeles.");
+            logError("Tamaño de imagen incorrecto", 400, "Subida de imagen", "La imagen no tiene el tamaño adecuado.");
             return;
         }
 
-        // Crear un FormData para la subida de la imagen
         const formData = new FormData();
         formData.append('image', imageFile);
         formData.append('organizer_id', organizerId);
 
-        // Subir la imagen al servidor
         try {
             const response = await fetch(`${URL_PAGE_BASE}/php/upload-organizer-image.php`, {
                 method: 'POST',
@@ -435,75 +436,27 @@ async function uploadOrganizerImage(organizerId) {
                 console.log("Imagen subida correctamente.");
             } else {
                 createErrorModal("Error al subir la imagen", "Ocurrió un error al intentar subir la imagen. Por favor, intenta de nuevo más tarde.");
+                logError("Error al subir la imagen", 500, "Subida de imagen", result.message); // Registro de error
             }
         } catch (error) {
             createErrorModal("Error al subir la imagen", "Ocurrió un error al intentar subir la imagen. Por favor, intenta de nuevo más tarde.");
+            logError("Error al subir la imagen", 500, "Subida de imagen", error.message); // Registro de error
         }
     }
 }
 
-// Modales de éxito y error
-function createSuccessModal(message) {
-    const modalHtml = `
-        <div class="modal fade" id="successModal" tabindex="-1" role="dialog" aria-labelledby="successModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="successModalLabel"><i class="fas fa-check-circle"></i> Acción Exitosa</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                    <div class="modal-body">
-                        <p>${message}</p>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
-                    </div>
-                </div>
-            </div>
-        </div>`;
+// Función para obtener estadísticas generales
+async function fetchGeneralStatistics() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/general-statistics`);
+        const data = await response.json();
 
-    document.body.insertAdjacentHTML('beforeend', modalHtml);
-
-    // Usar el método modal de Bootstrap 4 para mostrar el modal
-    $('#successModal').modal('show');
-
-    // Remover el modal después de que se cierre
-    $('#successModal').on('hidden.bs.modal', function () {
-        $(this).remove();
-    });
-}
-
-function createErrorModal(title, errorMessage, helpLink = '') {
-    const modalHtml = `
-        <div class="modal fade" id="errorModal" tabindex="-1" role="dialog" aria-labelledby="errorModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="errorModalLabel"><i class="fas fa-exclamation-circle"></i> ${title}</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                    <div class="modal-body" style="text-align: justify;">
-                        <p><i class="fas fa-info-circle"></i> ${errorMessage}</p>
-                        ${helpLink ? `<p style="text-align: center;"><a href="${helpLink}" target="_blank">Obtener más información</a></p>` : ''}
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
-                    </div>
-                </div>
-            </div>
-        </div>`;
-
-    document.body.insertAdjacentHTML('beforeend', modalHtml);
-
-    // Usar el método modal de Bootstrap 4 para mostrar el modal
-    $('#errorModal').modal('show');
-
-    // Remover el modal después de que se cierre
-    $('#errorModal').on('hidden.bs.modal', function () {
-        $(this).remove();
-    });
+        document.getElementById("total-comments").textContent = data.total_comments;
+        document.getElementById("avg-rating").textContent = data.avg_rating.toFixed(2);
+        document.getElementById("total-registrations").textContent = data.total_registrations;
+    } catch (error) {
+        console.error("Error:", error);
+        createErrorModal("Error al obtener estadísticas generales", "Ocurrió un error al intentar obtener las estadísticas generales. Por favor, intenta de nuevo más tarde.");
+        logError("Error al obtener estadísticas generales", 500, "API de estadísticas generales", error.message);
+    }
 }

@@ -14,7 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // Validar tamaño de la imagen
         list($width, $height) = getimagesize($image['tmp_name']);
-        if ($width !== 100 || $height !== 100) {
+        if ($width !== 200 || $height !== 200) {
             echo json_encode(['success' => false, 'message' => 'La imagen debe tener un tamaño de 100x100 píxeles']);
             exit;
         }
@@ -38,4 +38,3 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         echo json_encode(['success' => false, 'message' => 'No se proporcionaron los datos necesarios']);
     }
 }
-?>

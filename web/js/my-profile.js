@@ -1,4 +1,5 @@
-import { API_BASE_URL } from './config.js';
+import { API_BASE_URL, URL_PAGE_BASE } from './config.js';
+import { createSuccessModal, createErrorModal } from './modals.js';
 
 document.addEventListener("DOMContentLoaded", function () {
     const userId = localStorage.getItem('user_id');
@@ -52,16 +53,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 imgElement.src = profilePhoto;
                 document.getElementById("profile-name").innerText = user.full_name;
 
-                // Mostrar los datos del usuario en la página
-                document.getElementById("username").innerText = user.username;
-                document.getElementById("full-name").innerText = user.full_name;
-                document.getElementById("email").innerText = user.email;
-                document.getElementById("gender").innerText = user.gender === 'male' ? 'Masculino' : user.gender === 'female' ? 'Femenino' : 'No especificado';
-                document.getElementById("country").innerText = user.country || 'No especificado';
-                document.getElementById("phone-number").innerText = user.phone_number || 'No disponible';
-                document.getElementById("birth-date").innerText = user.birth_date || 'No especificado';
-                document.getElementById("created-at").innerText = formatDateToLocal(user.created_at); 
-                document.getElementById("updated-at").innerText = formatDateToLocal(user.updated_at); 
+                displayUserData(user); // Mostrar los datos del usuario en la página
 
                 // Rellenar el formulario de edición con los datos actuales
                 document.getElementById("edit-username").value = user.username;
@@ -80,92 +72,34 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // Función para convertir la fecha UTC a hora local
-    function formatDateToLocal(utcDate) {
-        const date = new Date(utcDate);
-        const localDate = new Date(date.getTime() - (date.getTimezoneOffset() * 60000));
-        
-        const options = {
-            day: '2-digit',
-            month: 'long',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit',
-            hour12: false
-        };
-        
-        const formattedDate = localDate.toLocaleString('es-ES', options);
-        
-        const timezoneOffset = localDate.getTimezoneOffset();
-        const sign = timezoneOffset > 0 ? '-' : '+';
-        const offset = Math.abs(timezoneOffset / 60);  
-        const gmt = ` GMT${sign}${String(offset).padStart(2, '0')}`;
-        
-        return `${formattedDate} ${gmt}`;
-    }
-
     // Función para actualizar los datos del usuario
     async function updateUserData(event) {
         event.preventDefault(); // Evitar el envío por defecto del formulario
 
         // Obtener los datos actuales del usuario
+        const genderActualText = document.getElementById("gender").innerText;
+    
+        let genderText;
+        if (genderActualText === 'Masculino') {
+            genderText = 'male';
+        } else if (genderActualText === 'Femenino') {
+            genderText = 'female';
+        } else {
+            genderText = '';
+        }
+
         const currentUserData = {
             username: document.getElementById("username").innerText,
             email: document.getElementById("email").innerText,
             full_name: document.getElementById("full-name").innerText,
-            gender: document.getElementById("gender").innerText === 'Masculino' ? 'male' : document.getElementById("gender").innerText === 'Femenino' ? 'female' : '',
+            gender: genderText,
             country: document.getElementById("country").innerText,
             phone_number: document.getElementById("phone-number").innerText,
             birth_date: document.getElementById("birth-date").innerText,
         };
 
-        // Construir el objeto con los campos modificados
-        const updatedUser = {};
-        const modifiedFields = [];  // Lista para almacenar los campos modificados
-
-        // Compara cada campo y solo incluye aquellos que fueron modificados
-        const username = document.getElementById("edit-username").value;
-        if (username && username !== currentUserData.username) {
-            updatedUser.username = username;
-            modifiedFields.push('Nombre de usuario');
-        }
-
-        const email = document.getElementById("edit-email").value;
-        if (email && email !== currentUserData.email) {
-            updatedUser.email = email;
-            modifiedFields.push('Correo electrónico');
-        }
-
-        const fullName = document.getElementById("edit-full-name").value;
-        if (fullName && fullName !== currentUserData.full_name) {
-            updatedUser.full_name = fullName;
-            modifiedFields.push('Nombre completo');
-        }
-
-        const gender = document.getElementById("edit-gender").value;
-        if (gender && gender !== currentUserData.gender) {
-            updatedUser.gender = gender;
-            modifiedFields.push('Género');
-        }
-
-        const country = document.getElementById("edit-country").value;
-        if (country && country !== currentUserData.country) {
-            updatedUser.country = country;
-            modifiedFields.push('País');
-        }
-
-        const phoneNumber = document.getElementById("edit-phone-number").value;
-        if (phoneNumber && phoneNumber !== currentUserData.phone_number) {
-            updatedUser.phone_number = phoneNumber;
-            modifiedFields.push('Número de teléfono');
-        }
-
-        const birthDate = document.getElementById("edit-birth-date").value;
-        if (birthDate && birthDate !== currentUserData.birth_date) {
-            updatedUser.birth_date = birthDate;
-            modifiedFields.push('Fecha de nacimiento');
-        }
+        // Obtener los campos modificados y los datos actualizados
+        const { updatedUser, modifiedFields } = getModifiedFields(currentUserData);
 
         // Si no se ha modificado ningún campo, mostrar un mensaje y no hacer la solicitud
         if (modifiedFields.length === 0) {
@@ -192,17 +126,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 createSuccessModal(fieldsMessage);
 
-                // Actualizar la UI con los nuevos datos
-                document.getElementById("username").innerText = updatedData.username;
-                document.getElementById("full-name").innerText = updatedData.full_name;
-                document.getElementById("email").innerText = updatedData.email;
-                document.getElementById("gender").innerText = updatedData.gender === 'male' ? 'Masculino' : updatedData.gender === 'female' ? 'Femenino' : 'No especificado';
-                document.getElementById("country").innerText = updatedData.country || 'No especificado';
-                document.getElementById("phone-number").innerText = updatedData.phone_number || 'No disponible';
-                document.getElementById("birth-date").innerText = updatedData.birth_date || 'No especificado';
-                document.getElementById("created-at").innerText = formatDateToLocal(updatedData.created_at); 
-                document.getElementById("updated-at").innerText = formatDateToLocal(updatedData.updated_at);
+                displayUserData(updatedData) // Actualizar los datos del usuario en la página
                 document.getElementById("profile-name").innerText = updatedData.full_name;
+
             } else {
                 createErrorModal("Error al actualizar los datos", "Hubo un problema al actualizar la información.");
             }
@@ -296,13 +222,11 @@ document.addEventListener("DOMContentLoaded", function () {
             });
 
             if (updateResponse.ok) {
-                const result = await updateResponse.json();
                 createSuccessModal("Contraseña actualizada correctamente");
                 document.getElementById("current-password").value = '';
                 document.getElementById("new-password").value = '';
                 document.getElementById("confirm-password").value = '';
             } else {
-                const error = await updateResponse.json();
                 createErrorModal("Error al cambiar la contraseña", error.detail);
             }
         } catch (error) {
@@ -322,69 +246,173 @@ document.addEventListener("DOMContentLoaded", function () {
     getUserData(); // Llamada para obtener los datos del usuario
 });
 
-
-// Modales de éxito y error
-function createSuccessModal(message) {
-    const modalHtml = `
-        <div class="modal fade" id="successModal" tabindex="-1" role="dialog" aria-labelledby="successModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="successModalLabel"><i class="fas fa-check-circle"></i> Acción Exitosa</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                    <div class="modal-body">
-                        <p>${message}</p>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
-                    </div>
-                </div>
-            </div>
-        </div>`;
-
-    document.body.insertAdjacentHTML('beforeend', modalHtml);
-
-    // Usar el método modal de Bootstrap 4 para mostrar el modal
-    $('#successModal').modal('show');
-
-    // Remover el modal después de que se cierre
-    $('#successModal').on('hidden.bs.modal', function () {
-        $(this).remove();
-    });
+// Función para convertir la fecha UTC a hora local
+function formatDateToLocal(utcDate) {
+    const date = new Date(utcDate);
+    const localDate = new Date(date.getTime() - (date.getTimezoneOffset() * 60000));
+    
+    const options = {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false
+    };
+    
+    const formattedDate = localDate.toLocaleString('es-ES', options);
+    
+    const timezoneOffset = localDate.getTimezoneOffset();
+    const sign = timezoneOffset > 0 ? '-' : '+';
+    const offset = Math.abs(timezoneOffset / 60);  
+    const gmt = ` GMT${sign}${String(offset).padStart(2, '0')}`;
+    
+    return `${formattedDate} ${gmt}`;
 }
 
-function createErrorModal(title, errorMessage, helpLink = '') {
-    const modalHtml = `
-        <div class="modal fade" id="errorModal" tabindex="-1" role="dialog" aria-labelledby="errorModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="errorModalLabel"><i class="fas fa-exclamation-circle"></i> ${title}</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                    <div class="modal-body" style="text-align: justify;">
-                        <p><i class="fas fa-info-circle"></i> ${errorMessage}</p>
-                        ${helpLink ? `<p style="text-align: center;"><a href="${helpLink}" target="_blank">Obtener más información</a></p>` : ''}
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
-                    </div>
-                </div>
-            </div>
-        </div>`;
-
-    document.body.insertAdjacentHTML('beforeend', modalHtml);
-
-    // Usar el método modal de Bootstrap 4 para mostrar el modal
-    $('#errorModal').modal('show');
-
-    // Remover el modal después de que se cierre
-    $('#errorModal').on('hidden.bs.modal', function () {
-        $(this).remove();
-    });
+// Función para mostrar los datos del usuario en la página
+function displayUserData(user) {
+    document.getElementById("username").innerText = user.username;
+    document.getElementById("full-name").innerText = user.full_name;
+    document.getElementById("email").innerText = user.email;
+    let genderText;
+    if (user.gender === 'male') {
+        genderText = 'Masculino';
+    } else if (user.gender === 'female') {
+        genderText = 'Femenino';
+    } else {
+        genderText = 'No especificado';
+    }
+    document.getElementById("gender").innerText = genderText;
+    document.getElementById("country").innerText = user.country || 'No especificado';
+    document.getElementById("phone-number").innerText = user.phone_number || 'No disponible';
+    document.getElementById("birth-date").innerText = user.birth_date || 'No especificado';
+    document.getElementById("created-at").innerText = formatDateToLocal(user.created_at); 
+    document.getElementById("updated-at").innerText = formatDateToLocal(user.updated_at);
 }
+
+function getModifiedFields(currentUserData) {
+    const updatedUser = {};
+    const modifiedFields = [];
+
+    const username = document.getElementById("edit-username").value;
+    if (username && username !== currentUserData.username) {
+        updatedUser.username = username;
+        modifiedFields.push('Nombre de usuario');
+    }
+
+    const email = document.getElementById("edit-email").value;
+    if (email && email !== currentUserData.email) {
+        updatedUser.email = email;
+        modifiedFields.push('Correo electrónico');
+    }
+
+    const fullName = document.getElementById("edit-full-name").value;
+    if (fullName && fullName !== currentUserData.full_name) {
+        updatedUser.full_name = fullName;
+        modifiedFields.push('Nombre completo');
+    }
+
+    const gender = document.getElementById("edit-gender").value;
+    if (gender && gender !== currentUserData.gender) {
+        updatedUser.gender = gender;
+        modifiedFields.push('Género');
+    }
+
+    const country = document.getElementById("edit-country").value;
+    if (country && country !== currentUserData.country) {
+        updatedUser.country = country;
+        modifiedFields.push('País');
+    }
+
+    const phoneNumber = document.getElementById("edit-phone-number").value;
+    if (phoneNumber && phoneNumber !== currentUserData.phone_number) {
+        updatedUser.phone_number = phoneNumber;
+        modifiedFields.push('Número de teléfono');
+    }
+
+    const birthDate = document.getElementById("edit-birth-date").value;
+    if (birthDate && birthDate !== currentUserData.birth_date) {
+        updatedUser.birth_date = birthDate;
+        modifiedFields.push('Fecha de nacimiento');
+    }
+
+    return { updatedUser, modifiedFields };
+}
+
+document.getElementById("change-profile-btn").addEventListener("click", function() {
+    document.getElementById("profile-image").click();
+});
+
+// Función para manejar la subida de la foto de perfil
+document.getElementById("profile-image").addEventListener("change", async function(event) {
+    const imageFile = event.target.files[0];
+    const userId = localStorage.getItem('user_id');
+
+    if (imageFile) {
+        // Validación de formato de archivo
+        if (!imageFile.type.startsWith("image/")) {
+            createErrorModal("Formato de imagen inválido", "Por favor, selecciona una imagen.");
+            return;
+        }
+
+        // Crear un objeto de imagen para cargarla
+        const img = new Image();
+        img.src = URL.createObjectURL(imageFile);
+
+        img.onload = async function () {
+            // Crear un canvas para redimensionar la imagen
+            const canvas = document.createElement("canvas");
+            const ctx = canvas.getContext("2d");
+
+            // Establecer el tamaño de la imagen a 200x200
+            canvas.width = 200;
+            canvas.height = 200;
+
+            // Dibujar la imagen redimensionada en el canvas
+            ctx.drawImage(img, 0, 0, 200, 200);
+
+            // Convertir la imagen del canvas a formato webp
+            const webpBlob = await new Promise(resolve => {
+                canvas.toBlob(resolve, "image/webp");
+            });
+
+            // Crear un FormData para la subida de la imagen
+            const formData = new FormData();
+            formData.append('image', webpBlob, `${userId}.webp`);
+            formData.append('user_id', userId);
+
+            // Subir la imagen al servidor
+            try {
+                const response = await fetch(`${URL_PAGE_BASE}/php/upload-profile-image.php`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    createSuccessModal("Foto de perfil cambiada", "Tu foto de perfil ha sido actualizada correctamente.");
+                    // Actualizar la foto de perfil en la página
+                    const imgElement = document.getElementById("profile-photo");
+                    imgElement.src = URL.createObjectURL(webpBlob);
+
+                    // Recargar la página después de 3 segundos
+                    setTimeout(() => {
+                        location.reload();
+                    }, 3000);
+                } else {
+                    createErrorModal("Error al cambiar la foto", result.message || "Ocurrió un error al intentar cambiar tu foto de perfil.");
+                }
+            } catch (error) {
+                createErrorModal("Error al cambiar la foto", "Ocurrió un error al intentar cambiar tu foto de perfil. Por favor, intenta de nuevo más tarde.");
+            }
+        };
+
+        img.onerror = function() {
+            createErrorModal("Error al cargar la imagen", "La imagen seleccionada no es válida.");
+        };
+    } else {
+        createErrorModal("No se seleccionó ninguna imagen", "Por favor, selecciona una imagen para cambiar la foto de perfil.");
+    }
+});

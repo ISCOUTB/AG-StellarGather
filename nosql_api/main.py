@@ -46,7 +46,6 @@ class NewsletterSubscriber(BaseModel):
 
 class Interaction(BaseModel):
     userId: str
-    eventId: str
     interactionType: str
     metadata: dict = {}
     duration: float
@@ -56,9 +55,7 @@ class Error(BaseModel):
     errorMessage: str
     errorCode: int
     service: str
-    stackTrace: Optional[str] = None
-    severity: str
-    userImpact: bool
+    information: str
     timestamp: Optional[datetime] = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 @app.get("/", tags=["status"])

@@ -1,4 +1,5 @@
 import { API_BASE_URL } from './config.js';
+import { createSuccessModal, createErrorModal } from './modals.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     // Función para manejar el registro
@@ -36,10 +37,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
             createSuccessModal('¡Registro completado con éxito! Inicia sesión para confirmar. Será redirigido en 5 segundos.');
 
-            // Redirigir después de 5 segundos
+            // Redirigir después de 2 segundos
             setTimeout(() => {
                 window.location.href = 'login.html'; 
-            }, 5000); // 5000 ms = 5 segundos
+            }, 2000);
         } catch (error) {
             console.error('Error en el registro:', error);
             createErrorModal('Error', 'Hubo un problema al registrar. Por favor, verifica tus datos.');
@@ -65,7 +66,7 @@ function validatePassword(password) {
         errors.push('La contraseña debe incluir al menos una letra minúscula.');
     }
     // Verificar la presencia de números
-    if (!/[0-9]/.test(password)) {
+    if (!/\d/.test(password)) {
         errors.push('La contraseña debe incluir al menos un número.');
     }
     // Verificar la presencia de símbolos especiales
@@ -86,66 +87,4 @@ function validatePassword(password) {
         isValid: true,
         messages: []
     };
-}
-
-// Modales de éxito y error
-function createSuccessModal(message) {
-    const modalHtml = `
-        <div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="successModalLabel"><i class="fas fa-check-circle"></i> Acción Exitosa</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <p>${message}</p>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
-                    </div>
-                </div>
-            </div>
-        </div>`;
-
-    document.body.insertAdjacentHTML('beforeend', modalHtml);
-
-    // Usar el método modal de Bootstrap 4 para mostrar el modal
-    $('#successModal').modal('show');
-
-    // Remover el modal después de que se cierre
-    $('#successModal').on('hidden.bs.modal', function () {
-        $(this).remove();
-    });
-}
-
-function createErrorModal(title, errorMessage, helpLink = '') {
-    const modalHtml = `
-        <div class="modal fade" id="errorModal" tabindex="-1" aria-labelledby="errorModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="errorModalLabel"><i class="fas fa-exclamation-circle"></i> ${title}</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body" style="text-align: justify;">
-                        <p><i class="fas fa-info-circle"></i> ${errorMessage}</p>
-                        ${helpLink ? `<p style="text-align: center;"><a href="${helpLink}" target="_blank">Obtener más información</a></p>` : ''}
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
-                    </div>
-                </div>
-            </div>
-        </div>`;
-
-    document.body.insertAdjacentHTML('beforeend', modalHtml);
-
-    // Usar el método modal de Bootstrap 4 para mostrar el modal
-    $('#errorModal').modal('show');
-
-    // Remover el modal después de que se cierre
-    $('#errorModal').on('hidden.bs.modal', function () {
-        $(this).remove();
-    });
 }

@@ -11,6 +11,12 @@ import matplotlib.pyplot as plt
 import io
 import base64
 
+USER_NOT_FOUND = "User not found"
+EVENT_NOT_FOUND = "Event not found"
+REGISTRATION_NOT_FOUND = "Registration not found"
+ORGANIZER_NOT_FOUND = "Organizer not found"
+CATEGORY_NOT_FOUND = "Category not found"
+FEEDBACK_NOT_FOUND = "Feedback not found"
 
 app = FastAPI(
     title="StellarGather SQL Service API",
@@ -265,7 +271,7 @@ def get_user_by_id(user_id: int):
     """
     user = execute_query(query, (user_id,))
     if not user:
-        raise HTTPException(status_code=404, detail="User not found")
+        raise HTTPException(status_code=404, detail=USER_NOT_FOUND)
     
     return UserResponse(**user[0])
 
@@ -290,7 +296,7 @@ def update_user(user_id: int, user: UserUpdate):
     current_user_data = execute_query(query_get_user, (user_id,))
     
     if not current_user_data:
-        raise HTTPException(status_code=404, detail="User not found")
+        raise HTTPException(status_code=404, detail=USER_NOT_FOUND)
 
     current_user = current_user_data[0]
 
@@ -356,7 +362,7 @@ def delete_user(user_id: int):
     query = "DELETE FROM users WHERE id = %s"
     rows_affected = execute_non_query(query, (user_id,))
     if rows_affected == 0:
-        raise HTTPException(status_code=404, detail="User not found")
+        raise HTTPException(status_code=404, detail=USER_NOT_FOUND)
 
 # Login de un usuario
 @app.post("/users/login", tags=["users"])
@@ -388,7 +394,7 @@ def validate_password(user_id: int, password: PasswordValidation):
     user_data = execute_query(query, (user_id,))
 
     if not user_data:
-        raise HTTPException(status_code=404, detail="User not found")
+        raise HTTPException(status_code=404, detail=USER_NOT_FOUND)
     
     stored_password_hash = user_data[0]['password']
     
@@ -402,16 +408,26 @@ def validate_password(user_id: int, password: PasswordValidation):
 @app.get("/users/{user_id}/registration-events", response_model=List[dict], tags=["users"])
 def get_registration_events_by_user(user_id: int, page: Optional[int] = Query(1, ge=1), limit: Optional[int] = Query(10, ge=1)):
 
-    skip = (page - 1) * limit
-    query = """
-    SELECT events.id AS event_id, events.name, events.description, events.location, events.date as event_date, events.max_capacity, events.price, events.organizer_id, registrations.id AS registration_id, registrations.date AS registration_date, registrations.status
-    FROM registrations
-    JOIN events ON registrations.event_id = events.id
-    WHERE registrations.user_id = %s
-    ORDER BY registrations.id DESC
-    LIMIT %s OFFSET %s
-    """
-    events = execute_query(query, (user_id, limit, skip))
+    if limit is not None:
+        skip = (page - 1) * limit
+        query = """
+        SELECT events.id AS event_id, events.name, events.description, events.location, events.date as event_date, events.max_capacity, events.price, events.organizer_id, registrations.id AS registration_id, registrations.date AS registration_date, registrations.status
+        FROM registrations
+        JOIN events ON registrations.event_id = events.id
+        WHERE registrations.user_id = %s
+        ORDER BY registrations.id DESC
+        LIMIT %s OFFSET %s
+        """
+        events = execute_query(query, (user_id, limit, skip))
+    else:
+        query = """
+        SELECT events.id AS event_id, events.name, events.description, events.location, events.date as event_date, events.max_capacity, events.price, events.organizer_id, registrations.id AS registration_id, registrations.date AS registration_date, registrations.status
+        FROM registrations
+        JOIN events ON registrations.event_id = events.id
+        WHERE registrations.user_id = %s
+        ORDER BY registrations.id DESC
+        """
+        events = execute_query(query, (user_id,))
     if not events:
         raise HTTPException(status_code=404, detail="No events found for this user")
     return events
@@ -429,9 +445,9 @@ def get_registration_count_by_user(user_id: int):
 # Obtener todos los eventos
 @app.get("/events", response_model=List[EventResponse], tags=["events"])
 def get_events(page: Optional[int] = Query(1, ge=1), limit: Optional[int] = Query(10, ge=1)):
-    skip = (page - 1) * limit
-
+    
     if limit is not None:
+        skip = (page - 1) * limit
         query = """
         SELECT * FROM events
         LIMIT %s OFFSET %s
@@ -439,7 +455,7 @@ def get_events(page: Optional[int] = Query(1, ge=1), limit: Optional[int] = Quer
         events = execute_query(query, (limit, skip))
     else:
         query = """
-        SELECT * FROM events ORDER BY date DESC
+        SELECT * FROM events
         """
         events = execute_query(query)
     
@@ -497,7 +513,7 @@ def get_event_by_id(event_id: int):
     query = "SELECT * FROM events WHERE id = %s"
     event = execute_query(query, (event_id,))
     if not event:
-        raise HTTPException(status_code=404, detail="Event not found")
+        raise HTTPException(status_code=404, detail=EVENT_NOT_FOUND)
     
     return EventResponse(**event[0])
 
@@ -522,7 +538,7 @@ def delete_event(event_id: int):
     query = "DELETE FROM events WHERE id = %s"
     rows_affected = execute_non_query(query, (event_id,))
     if rows_affected == 0:
-        raise HTTPException(status_code=404, detail="Event not found")
+        raise HTTPException(status_code=404, detail=EVENT_NOT_FOUND)
 
 # Obtener las inscripciones de un evento
 @app.get("/events/{event_id}/registrations", response_model=dict, tags=["events"])
@@ -538,7 +554,7 @@ def get_event_registrations(event_id: int):
     query_event = "SELECT max_capacity FROM events WHERE id = %s"
     event = execute_query(query_event, (event_id,))
     if not event:
-        raise HTTPException(status_code=404, detail="Event not found")
+        raise HTTPException(status_code=404, detail=EVENT_NOT_FOUND)
     
     max_capacity = event[0]['max_capacity']
     available_slots = max_capacity - len(registrations) if registrations else max_capacity
@@ -553,23 +569,32 @@ def get_event_registrations(event_id: int):
 #Obtener los feedbacks de un evento
 @app.get("/events/{event_id}/feedbacks", response_model=List[FeedbackResponse], tags=["events"])
 def get_event_feedbacks(event_id: int, page: Optional[int] = Query(1, ge=1), limit: Optional[int] = Query(20, ge=1)):
-    skip = (page - 1) * limit
-    query = """
-    SELECT * 
-    FROM feedbacks 
-    WHERE event_id = %s
-    ORDER BY timestamp DESC
-    LIMIT %s OFFSET %s
-    """
     
-    feedbacks = execute_query(query, (event_id, limit, skip))
+    if limit is not None:
+        skip = (page - 1) * limit
+        query = """
+        SELECT * 
+        FROM feedbacks 
+        WHERE event_id = %s
+        ORDER BY timestamp DESC
+        LIMIT %s OFFSET %s
+        """
+        feedbacks = execute_query(query, (event_id, limit, skip))
+    else:
+        query = """
+        SELECT * 
+        FROM feedbacks 
+        WHERE event_id = %s
+        ORDER BY timestamp DESC
+        """
+        feedbacks = execute_query(query, (event_id,))
     if not feedbacks:
         raise HTTPException(status_code=404, detail="No feedbacks found for this event")
     return feedbacks
 
 # Obtener los próximos eventos con plazas disponibles
 @app.get("/upcoming-events", response_model=List[EventResponse], tags=["events"])
-def get_upcoming_events(limit: int = Query(10, ge=1), skip: int = Query(0, ge=0)): 
+def get_upcoming_events(limit: int = Query(10, ge=1), skip: int = Query(0, ge=0)):
     query = """
     SELECT e.* 
     FROM events e
@@ -599,16 +624,33 @@ def get_event_count():
     result = execute_query(query)
     return {"event_count": result[0]["event_count"]}
 
-# Obtener los eventos por fecha específica
-@app.get("/events/date/{event_date}", response_model=List[EventResponse], tags=["events"])
-def get_events_by_date(event_date: str):
+# Obtener el conteo total de eventos un día específico
+@app.get("/events/count/by-date/{event_date}", response_model=dict, tags=["events"])
+def get_event_count_by_specific_day(event_date: str):
     try:
         date = datetime.strptime(event_date, "%Y-%m-%d").date()  # Solo conservamos la fecha, no la hora
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid date format. Use YYYY-MM-DD.")
     
-    query = "SELECT * FROM events WHERE DATE(date) = %s"
-    events = execute_query(query, (date,))
+    query = "SELECT COUNT(*) AS event_count FROM events WHERE DATE(date) = %s"
+    result = execute_query(query, (date,))
+    return {"event_count": result[0]["event_count"]}
+
+# Obtener los eventos por fecha específica
+@app.get("/events/date/{event_date}", response_model=List[EventResponse], tags=["events"])
+def get_events_by_date(event_date: str, page: Optional[int] = Query(1, ge=1), limit: Optional[int] = Query(12, ge=1)):
+    try:
+        date = datetime.strptime(event_date, "%Y-%m-%d").date()  # Solo conservamos la fecha, no la hora
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid date format. Use YYYY-MM-DD.")
+    
+    if limit is not None:
+        skip = (page - 1) * limit
+        query = "SELECT * FROM events WHERE DATE(date) = %s LIMIT %s OFFSET %s"
+        events = execute_query(query, (date, limit, skip))
+    else:
+        query = "SELECT * FROM events WHERE DATE(date) = %s"
+        events = execute_query(query, (date,))
     
     if not events:
         raise HTTPException(status_code=404, detail="No events found for this date")
@@ -622,10 +664,82 @@ def get_event_count_by_date():
     SELECT DATE(date) AS event_date, COUNT(*) AS event_count
     FROM events
     GROUP BY event_date
-    ORDER BY event_date DESC
+    ORDER BY event_date ASC
     """
     results = execute_query(query)
     return results
+
+# Obtener eventos por país específico
+@app.get("/events/country/{country}", response_model=List[EventResponse], tags=["events"])
+def get_events_by_country(country: str, page: Optional[int] = Query(1, ge=1), limit: Optional[int] = Query(10, ge=1)):
+
+    if limit is not None:
+        skip = (page - 1) * limit
+        query = "SELECT * FROM events WHERE country = %s LIMIT %s OFFSET %s"
+        events = execute_query(query, (country, limit, skip))
+    else:
+        query = "SELECT * FROM events WHERE country = %s"
+        events = execute_query(query, (country,))
+
+    if not events:
+        raise HTTPException(status_code=404, detail="No events found for this country")
+    return [EventResponse(**event) for event in events]
+
+# Obtener el conteo de eventos por país
+@app.get("/events/count/by-country", response_model=List[dict], tags=["events"])
+def get_event_count_by_country():
+    query = """
+    SELECT country, COUNT(*) AS event_count
+    FROM events
+    GROUP BY country
+    ORDER BY country ASC
+    """
+    results = execute_query(query)
+    return results
+
+# Obtener el conteo de eventos por país específico
+@app.get("/events/count/by-country/{country}", response_model=dict, tags=["events"])
+def get_event_count_by_specific_country(country: str):
+    query = "SELECT COUNT(*) AS event_count FROM events WHERE country = %s"
+    result = execute_query(query, (country,))
+    return {"country": country, "event_count": result[0]["event_count"]}
+
+# Obtener los eventos por organizador de eventos
+@app.get("/events/organizer/{organizer_id}", response_model=List[EventResponse], tags=["events"])
+def get_events_by_organizer(organizer_id: int, page: Optional[int] = Query(1, ge=1), limit: Optional[int] = Query(10, ge=1)):
+        
+        if limit is not None:
+            skip = (page - 1) * limit
+            query = "SELECT * FROM events WHERE organizer_id = %s LIMIT %s OFFSET %s"
+            events = execute_query(query, (organizer_id, limit, skip))
+        else:
+            query = "SELECT * FROM events WHERE organizer_id = %s"
+            events = execute_query(query, (organizer_id,))
+        
+        if not events:
+            raise HTTPException(status_code=404, detail="No events found for this organizer")
+        
+        return [EventResponse(**event) for event in events]
+
+# Obtener el conteo de eventos por organizador
+@app.get("/events/count/by-organizer", response_model=List[dict], tags=["events"])
+def get_event_count_by_organizer():
+    query = """
+    SELECT organizers.id, organizers.name AS organizer_name, COUNT(events.id) AS event_count
+    FROM events
+    JOIN organizers ON events.organizer_id = organizers.id
+    GROUP BY organizers.id
+    ORDER BY organizer_name ASC
+    """
+    results = execute_query(query)
+    return results
+
+# Obtener el conteo de eventos por organizador específico
+@app.get("/events/count/by-organizer/{organizer_id}", response_model=dict, tags=["events"])
+def get_event_count_by_specific_organizer(organizer_id: int):
+    query = "SELECT COUNT(*) AS event_count FROM events WHERE organizer_id = %s"
+    result = execute_query(query, (organizer_id,))
+    return {"organizer_id": organizer_id, "event_count": result[0]["event_count"]}
 
 
 # Endpoints para manejo de Registros
@@ -645,7 +759,7 @@ def create_registration(registration: Registration):
     query_event = "SELECT date FROM events WHERE id = %s"
     event = execute_query(query_event, (registration.event_id,))
     if not event:
-        raise HTTPException(status_code=404, detail="Event not found")
+        raise HTTPException(status_code=404, detail=EVENT_NOT_FOUND)
     
     event_date = event[0]["date"]
     if event_date < current_date:
@@ -681,7 +795,7 @@ def get_registration_by_id(registration_id: int):
     query = "SELECT * FROM registrations WHERE id = %s"
     registration = execute_query(query, (registration_id,))
     if not registration:
-        raise HTTPException(status_code=404, detail="Registration not found")
+        raise HTTPException(status_code=404, detail=REGISTRATION_NOT_FOUND)
     return RegistrationResponse(**registration[0])
 
 # Actualizar un registro
@@ -691,7 +805,7 @@ def update_registration(registration_id: int):
     query = "SELECT * FROM registrations WHERE id = %s"
     current_registration = execute_query(query, (registration_id,))
     if not current_registration:
-        raise HTTPException(status_code=404, detail="Registration not found")
+        raise HTTPException(status_code=404, detail=REGISTRATION_NOT_FOUND)
     
     current_registration = current_registration[0]
     
@@ -699,7 +813,7 @@ def update_registration(registration_id: int):
     query_event = "SELECT date FROM events WHERE id = %s"
     event = execute_query(query_event, (current_registration["event_id"],))
     if not event:
-        raise HTTPException(status_code=404, detail="Event not found")
+        raise HTTPException(status_code=404, detail=EVENT_NOT_FOUND)
     
     event_date = event[0]["date"]
     if event_date < datetime.now():
@@ -727,7 +841,7 @@ def check_registration(user_id: int, event_id: int):
     query = "SELECT * FROM registrations WHERE user_id = %s AND event_id = %s AND status = 'registered'"
     registration = execute_query(query, (user_id, event_id))
     if not registration:
-        raise HTTPException(status_code=404, detail="Registration not found")
+        raise HTTPException(status_code=404, detail=REGISTRATION_NOT_FOUND)
     return RegistrationResponse(**registration[0])
 
 # Eliminar un registro por su id
@@ -736,7 +850,7 @@ def delete_registration(registration_id: int):
     query = "DELETE FROM registrations WHERE id = %s"
     rows_affected = execute_non_query(query, (registration_id,))
     if rows_affected == 0:
-        raise HTTPException(status_code=404, detail="Registration not found")
+        raise HTTPException(status_code=404, detail=REGISTRATION_NOT_FOUND)
     
     
 # Endpoints para manejo de Organizadores
@@ -775,7 +889,7 @@ def get_organizer_by_id(organizer_id: int):
     query = "SELECT * FROM organizers WHERE id = %s"
     organizer = execute_query(query, (organizer_id,))
     if not organizer:
-        raise HTTPException(status_code=404, detail="Organizer not found")
+        raise HTTPException(status_code=404, detail=ORGANIZER_NOT_FOUND)
     return OrganizerResponse(**organizer[0])
 
 # Actualizar un organizador por su id
@@ -798,7 +912,7 @@ def delete_organizer(organizer_id: int):
     query = "DELETE FROM organizers WHERE id = %s"
     rows_affected = execute_non_query(query, (organizer_id,))
     if rows_affected == 0:
-        raise HTTPException(status_code=404, detail="Organizer not found")
+        raise HTTPException(status_code=404, detail=ORGANIZER_NOT_FOUND)
 
     
 # Endpoints para manejo de Categorías
@@ -836,7 +950,7 @@ def get_category_by_id(category_id: int):
     query = "SELECT * FROM categories WHERE id = %s"
     category = execute_query(query, (category_id,))
     if not category:
-        raise HTTPException(status_code=404, detail="Category not found")
+        raise HTTPException(status_code=404, detail=CATEGORY_NOT_FOUND)
     return CategoryResponse(**category[0])
 
 # Actualizar una categoría por su id
@@ -859,7 +973,7 @@ def delete_category(category_id: int):
     query = "DELETE FROM categories WHERE id = %s"
     rows_affected = execute_non_query(query, (category_id,))
     if rows_affected == 0:
-        raise HTTPException(status_code=404, detail="Category not found")
+        raise HTTPException(status_code=404, detail=CATEGORY_NOT_FOUND)
 
 # Obtener el conteo de eventos por categoría
 @app.get("/categories/events/count", response_model=List[dict], tags=["categories"])
@@ -869,10 +983,23 @@ def get_event_count_by_category():
     FROM categories
     LEFT JOIN event_categories ON categories.id = event_categories.category_id
     GROUP BY categories.id, categories.name
-    ORDER BY event_count DESC
+    ORDER BY categories.name ASC
     """
     results = execute_query(query)
     return results
+
+# Obtener el conteo de eventos en una categoría específica
+@app.get("/categories/{category_id}/events-count", response_model=dict, tags=["categories"])
+def get_event_count_by_category_id(category_id: int):
+    query = """
+    SELECT COUNT(*) AS event_count
+    FROM event_categories
+    WHERE category_id = %s
+    """
+    result = execute_query(query, (category_id,))
+    if not result:
+        raise HTTPException(status_code=404, detail="Category not found or no events found for this category")
+    return {"category_id": category_id, "event_count": result[0]["event_count"]}
 
 # Endpoints para manejo de Categorías de Eventos
 # Obtener todas las categorías de eventos
@@ -915,14 +1042,27 @@ def get_categories_by_event(event_id: int):
 
 # Obtener eventos por categoría
 @app.get("/categories/{category_id}/events", response_model=List[EventResponse], tags=["event_categories"])
-def get_events_by_category(category_id: int):
-    query = """
-    SELECT events.id, events.name, events.description, events.location, events.city, events.country, events.date, events.max_capacity, events.price, events.organizer_id
-    FROM event_categories
-    JOIN events ON event_categories.event_id = events.id
-    WHERE event_categories.category_id = %s
-    """
-    events = execute_query(query, (category_id,))
+def get_events_by_category(category_id: int, page: Optional[int] = Query(1, ge=1), limit: Optional[int] = Query(10, ge=1)):
+    
+    if limit is not None:
+        skip = (page - 1) * limit
+        query = """
+        SELECT events.id, events.name, events.description, events.location, events.city, events.country, events.date, events.max_capacity, events.price, events.organizer_id
+        FROM event_categories
+        JOIN events ON event_categories.event_id = events.id
+        WHERE event_categories.category_id = %s
+        LIMIT %s OFFSET %s
+        """
+        events = execute_query(query, (category_id, limit, skip))
+    else:
+        query = """
+        SELECT events.id, events.name, events.description, events.location, events.city, events.country, events.date, events.max_capacity, events.price, events.organizer_id
+        FROM event_categories
+        JOIN events ON event_categories.event_id = events.id
+        WHERE event_categories.category_id = %s
+        """
+        events = execute_query(query, (category_id,))
+
     if not events:
         raise HTTPException(status_code=404, detail="No events found for this category")
     return [EventResponse(**event) for event in events]
@@ -965,7 +1105,7 @@ def get_feedback_by_id(feedback_id: int):
     query = "SELECT * FROM feedbacks WHERE id = %s"
     feedback = execute_query(query, (feedback_id,))
     if not feedback:
-        raise HTTPException(status_code=404, detail="Feedback not found")
+        raise HTTPException(status_code=404, detail=FEEDBACK_NOT_FOUND)
     return FeedbackResponse(**feedback[0])
 
 # Actualizar un feedback por su id
@@ -991,9 +1131,28 @@ def delete_feedback(feedback_id: int):
     query = "DELETE FROM feedbacks WHERE id = %s"
     rows_affected = execute_non_query(query, (feedback_id,))
     if rows_affected == 0:
-        raise HTTPException(status_code=404, detail="Feedback not found")
+        raise HTTPException(status_code=404, detail=FEEDBACK_NOT_FOUND)
 
-# Endpoint dinámico para API SQL(Beta v0.5)
+# Endpoint para obtener estadísticas generales
+@app.get("/general-statistics", response_model=dict, tags=["statistics"])
+def get_general_statistics():
+    queries = {
+        "total_comments": "SELECT COUNT(*) AS total_comments FROM feedbacks",
+        "avg_rating": "SELECT AVG(rating_value) AS avg_rating FROM feedbacks",
+        "total_registrations": "SELECT COUNT(*) AS total_registrations FROM registrations"
+    }
+    
+    results = {}
+    for key, query in queries.items():
+        result = execute_query(query)
+        if key == "avg_rating":
+            results[key] = float(result[0][key])
+        else:
+            results[key] = result[0][key]
+    
+    return results
+
+# Endpoint dinámico para API SQL(Beta v1.0)
 api_key_stellargather = "" # Pones la API Key de OpenAI
 
 # Función para enviar la pregunta a ChatGPT y obtener la clasificación y detalles
@@ -1045,7 +1204,7 @@ def classify_question_with_chatgpt(question: Question):
 
 # Función para generar gráficos
 def generate_graph(data: pd.DataFrame, chart_type: str, x_axis: str, y_axis: str) -> str:
-    fig, ax = plt.subplots()
+    ax = plt.subplots()
 
     if chart_type == 'bar':
         data.plot(kind='bar', ax=ax, x=x_axis, y=y_axis)
@@ -1064,27 +1223,27 @@ def generate_graph(data: pd.DataFrame, chart_type: str, x_axis: str, y_axis: str
 @app.post("/generate-statistics-endpoint", tags=["dynamic_statistics"])
 async def generate_statistics_endpoint(query: Question):
     # Clasificar la pregunta con ChatGPT
-    responseChatGPT = classify_question_with_chatgpt(query)
+    response_chatgpt = classify_question_with_chatgpt(query)
     
     # Si la respuesta es un SQL, ejecutar la consulta y devolver los resultados
-    if responseChatGPT.response_type == 'sql':
-        querysql = responseChatGPT.sql_query
+    if response_chatgpt.response_type == 'sql':
+        querysql = response_chatgpt.sql_query
         result = execute_query(querysql)
         return result
     
     # Si la respuesta es un gráfico, generar el gráfico y devolver la imagen en base64
-    elif responseChatGPT.response_type == 'chart':
-        query = responseChatGPT.sql_query
+    elif response_chatgpt.response_type == 'chart':
+        query = response_chatgpt.sql_query
         result = execute_query(query)
 
         # Obtener parámetros del gráfico desde la respuesta de ChatGPT
         data = pd.DataFrame(result)
-        chart_type = responseChatGPT.chart_type
-        x_axis = responseChatGPT.x_axis
-        y_axis = responseChatGPT.y_axis
+        chart_type = response_chatgpt.chart_type
+        x_axis = response_chatgpt.x_axis
+        y_axis = response_chatgpt.y_axis
 
         # Generar el gráfico y devolver la imagen en base64
         image_base64 = generate_graph(data, chart_type, x_axis, y_axis)
         return {"image_base64": image_base64, "sql_query": query}
 
-    return responseChatGPT
+    return response_chatgpt

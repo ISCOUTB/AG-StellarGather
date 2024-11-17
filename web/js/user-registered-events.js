@@ -1,4 +1,5 @@
 import { API_BASE_URL } from './config.js';
+import { createSuccessModal, createErrorModal } from './modals.js';
 
 const eventsContainer = document.getElementById('events-container');
 const paginationContainer = document.getElementById('pagination');
@@ -49,48 +50,11 @@ async function loadEvents(page) {
         const displayPrice = parseFloat(price) === 0 ? 'Gratis' : `$${price}`;
 
         // Cálculos para habilitar cancelación
-        const isEventPast = eventDate < currentDate;
         const timeDifference = eventDate - currentDate;
         const hoursDifference = timeDifference / (1000 * 60 * 60);
         const canCancel = hoursDifference > 24;
 
-        let statusHtml = '';
-        let registrationMessage = '';
-        let cancelButtonClass = '';
-
-        if (isEventPast) {
-            if (event.status === 'canceled') {
-                statusHtml = `<div class="blog-status blog-status-canceled-with-done">
-                                <small class="text-white text-uppercase">Cancelado</small>
-                              </div>`;
-                registrationMessage = `Has cancelado el registro a este evento y no podrás asistir a él.`;
-                cancelButtonClass = 'disabled';
-            } else if (event.status === 'registered') {
-                statusHtml = `<div class="blog-status blog-status-registered-with-done">
-                                <small class="text-white text-uppercase">Registrado</small>
-                               </div>`;
-                registrationMessage = `Te registraste para este evento el día ${registrationDate}.`;
-                cancelButtonClass = 'disabled';
-            }
-            
-            statusHtml += `<div class="blog-status blog-status-done">
-                             <small class="text-white text-uppercase">Realizado</small> 
-                           </div>`;
-        } else {
-            if (event.status === 'registered') {
-                statusHtml = `<div class="blog-status blog-status-registered">
-                                <small class="text-white text-uppercase">Registrado</small> 
-                              </div>`;
-                registrationMessage = `Te has registrado a este evento el día ${registrationDate}.`;
-                cancelButtonClass = canCancel ? '' : 'disabled';
-            } else if (event.status === 'canceled') {
-                statusHtml = `<div class="blog-status blog-status-canceled">
-                                <small class="text-white text-uppercase">Cancelado</small>
-                              </div>`;
-                registrationMessage = `Has cancelado el registro a este evento y no podrás asistir a él.`;
-                cancelButtonClass = 'disabled';
-            }
-        }
+        const { statusHtml, registrationMessage, cancelButtonClass } = generateEventStatusHtml(event, currentDate, registrationDate, canCancel);
 
         eventsContainer.innerHTML += `
             <div class="col-lg-4 col-md-6 mb-5">
@@ -172,7 +136,6 @@ function createConfirmationModal(registrationId, eventId) {
 
     fetchEventDetails(eventId).then(eventDetails => {
         const eventName = eventDetails.name;
-        const eventLocation = eventDetails.location;
         const eventTime = new Date(eventDetails.date).toLocaleTimeString('es-ES', {
             hour: '2-digit',
             minute: '2-digit'
@@ -189,7 +152,7 @@ function createConfirmationModal(registrationId, eventId) {
                             </button>
                         </div>
                         <div class="modal-body">
-                            <p><i class="fas fa-question-circle"></i> ¿Está seguro de que desea cancelar su registro para el evento <strong>${eventName}</strong> en <strong>${eventLocation}</strong> a las <strong>${eventTime}*</strong>? (Hora local)</p>
+                            <p><i class="fas fa-question-circle"></i> ¿Está seguro de que desea cancelar su registro para el evento <strong>${eventName}</strong> en <strong>${eventDetails.location}, ${eventDetails.city}, ${eventDetails.country}</strong> a las <strong>${eventTime}*</strong>? (Hora local del evento)</p>
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
@@ -218,46 +181,44 @@ function createConfirmationModal(registrationId, eventId) {
     });
 }
 
-function createSuccessModal(message) {
-    const modalHtml = `
-        <div class="modal fade" id="successModal" tabindex="-1" role="dialog" aria-labelledby="successModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="successModalLabel"><i class="fas fa-check-circle"></i> Éxito</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                    <div class="modal-body">
-                        <p>${message}</p>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-primary" data-dismiss="modal">Cerrar</button>
-                    </div>
-                </div>
-            </div>
-        </div>`;
+function generateEventStatusHtml(event, currentDate, registrationDate, canCancel) {
+    let statusHtml = '';
+    let registrationMessage = '';
+    let cancelButtonClass = '';
 
-    // Inserta el modal en el cuerpo del documento
-    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    const eventDate = new Date(event.event_date);
+    const isEventPast = eventDate < currentDate;
 
-    // Mostrar el modal con Bootstrap 4
-    $('#successModal').modal('show');
+    if (isEventPast && event.status === 'registered') {
+        statusHtml = `<div class="blog-status blog-status-registered-with-done">
+                        <small class="text-white text-uppercase">Registrado</small> 
+                    </div>`;
+        registrationMessage = `Te registraste para este evento el día ${registrationDate}.`;
+        cancelButtonClass = 'disabled';
+    } else if (isEventPast && event.status === 'canceled') {
+        statusHtml = `<div class="blog-status blog-status-canceled-with-done">
+                        <small class="text-white text-uppercase">Cancelado</small>
+                        </div>`;
+        registrationMessage = `Has cancelado el registro a este evento y no podrás asistir a él.`;
+        cancelButtonClass = 'disabled';
+    } else if (!isEventPast && event.status === 'registered') {
+        statusHtml = `<div class="blog-status blog-status-registered">
+                        <small class="text-white text-uppercase">Registrado</small> 
+                        </div>`;
+        registrationMessage = `Te has registrado a este evento el día ${registrationDate}.`;
+        cancelButtonClass = canCancel ? '' : 'disabled';
+    } else {
+        statusHtml = `<div class="blog-status blog-status-canceled">
+                        <small class="text-white text-uppercase">Cancelado</small>
+                        </div>`;
+        registrationMessage = `Has cancelado el registro a este evento y no podrás asistir a él.`;
+        cancelButtonClass = 'disabled';
+    }
 
-    // Eliminar el modal después de que se cierre
-    $('#successModal').on('hidden.bs.modal', function () {
-        $(this).remove();
-    });
-
-    // Cerrar el modal automáticamente después de 4 segundos
-    setTimeout(() => {
-        $('#successModal').modal('hide');
-    }, 4000);
+    return { statusHtml, registrationMessage, cancelButtonClass };
 }
 
-
-function handleCancelRegistration(event, registrationId, status, eventId) {
+window.handleCancelRegistration = function(event, registrationId, status, eventId) {
     event.preventDefault(); // Previene el comportamiento predeterminado del enlace
     if (status === 'registered') {
         createConfirmationModal(registrationId, eventId);
@@ -287,6 +248,6 @@ function cancelRegistration(registrationId) {
     })
     .catch(error => {
         console.error(error);
-        alert('Error al cancelar el registro. Intenta nuevamente.'); // Puedes mejorar esto con un modal de error
+        createErrorModal('Error' , 'Error al cancelar el registro. Inténtalo de nuevo más tarde.');
     });
 }

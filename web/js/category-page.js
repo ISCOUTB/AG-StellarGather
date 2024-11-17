@@ -18,11 +18,11 @@ function getCategoryIdFromUrl() {
     return urlParams.get('category_id'); // Obtener el ID de la categoría
 }
 
-// Obtener las categorías disponibles
-async function fetchCategories() {
+// Obtener la cantidad de eventos por categorías
+async function fetchCountEventsCategories() {
     const response = await fetch(`${API_BASE_URL}/categories/events/count`);
-    const categories = await response.json();
-    return categories;
+    const countEventsByCategory = await response.json();
+    return countEventsByCategory;
 }
 
 // Hacer la solicitud para obtener los eventos de la categoría
@@ -37,6 +37,13 @@ async function fetchCategoryName(categoryId) {
     const response = await fetch(`${API_BASE_URL}/categories/${categoryId}`);
     const category = await response.json();
     return category.name;
+}
+
+// Obtener el número total de eventos por categoría
+async function fetchEventCountByCategory(categoryId) {
+    const response = await fetch(`${API_BASE_URL}/categories/${categoryId}/events-count`);
+    const data = await response.json();
+    totalEvents = data.event_count;
 }
 
 // Configurar la paginación
@@ -68,6 +75,7 @@ async function setupPagination(categoryId, currentPage) {
 
 // Mostrar los eventos en el contenedor
 async function loadEvents(categoryId, page) {
+    await fetchEventCountByCategory(categoryId);
     const events = await fetchEventsByCategory(categoryId, page);
     eventsContainer.innerHTML = '';
 
@@ -132,7 +140,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (!categoryId) {
         // Si no hay category_id, mostrar las categorías disponibles
-        const categories = await fetchCategories();
+        const categories = await fetchCountEventsCategories();
         displayCategorySelection(categories); // Mostrar las categorías
     } else {
         // Si hay un category_id, proceder a cargar los eventos

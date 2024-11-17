@@ -17,7 +17,7 @@ function getEventDateFromUrl() {
     return urlParams.get('event_date'); // Obtener la fecha del evento
 }
 
-// Función para formatear las fechas en el formato "15 Noviembre 2024"
+// Función para formatear las fechas en el formato "dia mes año"
 function formatDate(dateString) {
     // Aseguramos que la fecha siempre tenga un formato completo (incluso si no se especifica hora)
     const dateObj = new Date(dateString + "T00:00:00"); // Asegura que no haya confusión con la zona horaria
@@ -31,11 +31,11 @@ function formatDate(dateString) {
 }
 
 
-// Obtener las fechas disponibles
-async function fetchEventDates() {
+// Obtener la cantidad de eventos por fechas
+async function fetchCountEventDates() {
     const response = await fetch(`${API_BASE_URL}/events/count/by-date`);
-    const dates = await response.json();
-    return dates;
+    const countEventsByDate = await response.json();
+    return countEventsByDate;
 }
 
 // Hacer la solicitud para obtener los eventos de una fecha
@@ -43,6 +43,13 @@ async function fetchEventsByDate(eventDate, page) {
     const response = await fetch(`${API_BASE_URL}/events/date/${eventDate}?page=${page}&limit=${eventsPerPage}`);
     const events = await response.json();
     return events;
+}
+
+// Obtener el número total de eventos por fecha
+async function fetchEventCountByDate(eventDate) {
+    const response = await fetch(`${API_BASE_URL}/events/count/by-date/${eventDate}`);
+    const data = await response.json();
+    totalEvents = data.event_count;
 }
 
 // Configurar la paginación
@@ -62,8 +69,8 @@ async function setupPagination(eventDate, currentPage) {
 
         // Añadimos el manejador de evento `click` para cada página
         pageLink.addEventListener('click', (event) => {
-            event.preventDefault(); // Evitar que el enlace recargue la página
-            loadEvents(eventDate, i);  // Llamamos a loadEvents con el número de la página correspondiente
+            event.preventDefault();
+            loadEvents(eventDate, i);
         });
 
         // Agregamos el enlace al item de la página
@@ -74,6 +81,7 @@ async function setupPagination(eventDate, currentPage) {
 
 // Mostrar los eventos en el contenedor
 async function loadEvents(eventDate, page) {
+    await fetchEventCountByDate(eventDate);
     const events = await fetchEventsByDate(eventDate, page);
     eventsContainer.innerHTML = '';
 
@@ -140,7 +148,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (!eventDate) {
         // Si no hay event_date, mostrar las fechas disponibles
-        const dates = await fetchEventDates();
+        const dates = await fetchCountEventDates();
         displayDateSelection(dates); // Mostrar las fechas
     } else {
         // Si hay un event_date, proceder a cargar los eventos

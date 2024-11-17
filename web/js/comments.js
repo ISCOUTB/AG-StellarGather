@@ -6,7 +6,6 @@ let currentPage = 1;
 const commentsPerPage = 20;
 
 async function getCommentsSection() {
-    const urlParts = window.location.pathname.split('/');
     const urlParams = new URLSearchParams(window.location.search);
     const eventId = urlParams.get('event_id');
 
@@ -214,7 +213,7 @@ async function getCommentsSection() {
         // Determinar AM o PM
         const ampm = hours >= 12 ? 'PM' : 'AM';
         hours = hours % 12;
-        hours = hours ? hours : 12;  // La hora '0' debe ser '12'
+        hours = hours || 12;
         
         // Obtener la diferencia horaria en minutos y convertirla a formato GMT+/-número
         const timezoneOffset = localDate.getTimezoneOffset();

@@ -212,7 +212,7 @@
                             <div id="password-strength-container">
                                 <small id="password-strength-text" class="form-text text-muted">La contraseña debe tener al menos 8 caracteres e incluir mayúsculas, minúsculas, números y símbolos.</small>
                                 <div id="password-strength-bar" class="progress">
-                                    <div id="password-strength-fill" class="progress-bar progress-bar-striped" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                                    <progress id="password-strength-fill" value="0" max="100" class="progress-bar progress-bar-striped"></progress>
                                 </div>
                             </div>
                     
@@ -230,7 +230,14 @@
                         <div class="profile-photo text-center">
                             <img id="profile-photo" src="" alt="Foto de Perfil" class="img-fluid rounded-circle" width="150">
                         </div>
-                        <h5 class="text-light mt-3" id="profile-name"></h5>
+                        <h5 class="text-light mt-3" id="profile-name"> Nombre de Perfil</h5>
+                        <div class="d-flex justify-content-center mt-3">
+                            <button class="btn btn-primary" id="change-profile-btn">Cambiar Foto de Perfil</button>
+                        </div>
+                        <small class="d-block text-center text-muted mt-2">
+                            Recomendado: 200px x 200px y formato .webp para un mejor resultado.
+                        </small>
+                        <input type="file" id="profile-image" style="display:none" accept="image/*">                        
                     </div>
                 </div>
             </div>
@@ -305,7 +312,7 @@
             minLength: 8,
             hasUpperCase: /[A-Z]/,
             hasLowerCase: /[a-z]/,
-            hasNumbers: /[0-9]/,
+            hasNumbers: /\d/,
             hasSpecialChars: /[!@#$%^&*(),.?":{}|<>]/
         };
     

@@ -1,4 +1,5 @@
 import { API_BASE_URL } from './config.js';
+import { createSuccessModal, createErrorModal } from './modals.js';
 
 document.addEventListener('DOMContentLoaded', function () {
     loadEventDetailed();
@@ -40,7 +41,7 @@ function loadEventDetailed() {
             }
             introductionDetailsDiv.insertBefore(eventImage, introductionDetailsDiv.firstChild);
             document.getElementById('event-description').innerText = event.description;
-            document.getElementById('event-location').innerText = `${event.location}, ${event.city}, ${event.country}`;
+            document.getElementById('event-location').innerHTML = `${event.location}, ${event.city}, <a class="text-secondary" href="country.html?country_name=${encodeURIComponent(event.country)}">${event.country}</a>`;
             document.getElementById('event-date').innerText = new Date(event.date).toLocaleDateString('es-ES', {
                 year: 'numeric', month: 'long', day: 'numeric'
             }) + '*';
@@ -54,7 +55,7 @@ function loadEventDetailed() {
         })
         .then(response => {
             if (!response.ok) {
-                return [];
+                return { available_slots: 0 };
             }
             return response.json();
         })
@@ -69,11 +70,11 @@ function loadEventDetailed() {
                 .then(response => {
                     if (!response.ok) {
                         if (response.status === 404) {
-                            return false; // Usuario no registrado
+                            return false;
                         }
                         throw new Error('Error al verificar el registro');
                     }
-                    return response.json().then(() => true); // Usuario registrado
+                    return true;
                 })
                 .then(isRegistered => {
                     // Actualizar el botón de registro
@@ -135,8 +136,7 @@ function loadEventDetailed() {
 
                 const dateLink = document.createElement('a');
                 dateLink.className = 'text-secondary text-uppercase font-weight-medium';
-                const eventDateLink = new Date(event.date);
-                const formattedEventDateLink = eventDateLink.toISOString().split('T')[0];
+                const formattedEventDateLink = event.date.split('T')[0];
                 dateLink.href = `date.html?event_date=${formattedEventDateLink}`;
                 dateLink.innerText = formattedDate;
 
@@ -166,6 +166,9 @@ function loadEventDetailed() {
                 <div class="d-flex justify-content-center align-items-center">
                     <i class="fas fa-phone text-primary mr-2"></i>
                     <span class="font-weight-medium text-white phone">${organizer.phone}</span>
+                </div>
+                <div class="d-flex justify-content-center mt-3">
+                    <a href="organizer.html?organizer_id=${organizer.id}" class="btn btn-primary">Ver más eventos</a>
                 </div>
             `;
         })
@@ -208,7 +211,10 @@ function loadEventDetailed() {
         .catch(error => {
             console.error('Error en el sidebar:', error);
         });
+        loadUpcomingEvents();
+}
 
+function loadUpcomingEvents() {
     // Solicitud para obtener los eventos próximos
     fetch(`${API_BASE_URL}/upcoming-events`)
         .then(response => {
@@ -244,43 +250,7 @@ function loadEventDetailed() {
                 eventLink.innerText = event.name;
 
                 textDiv.appendChild(eventLink);
-
-                fetch(`${API_BASE_URL}/events/${event.id}/categories`)
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error('No se encontraron categorías para este evento');
-                        }
-                        return response.json();
-                    })
-                    .then(categories => {
-                        const categoryContainer = document.createElement('div');
-                        categoryContainer.className = 'd-flex';
-
-                        if (categories.length > 0) {
-                            categories.forEach((category, index) => {
-                                const categoryLink = document.createElement('small');
-                                categoryLink.innerHTML = `<a class="text-secondary text-uppercase font-weight-medium" href="category.html?category_id=${category.id}">${category.name}</a>`;
-                                categoryContainer.appendChild(categoryLink);
-
-                                if (index < categories.length - 1) {
-                                    const separator = document.createElement('small');
-                                    separator.className = 'text-primary px-2';
-                                    separator.innerText = '|';
-                                    categoryContainer.appendChild(separator);
-                                }
-                            });
-                        } else {
-                            const noCategory = document.createElement('small');
-                            noCategory.innerHTML = '<a class="text-secondary text-uppercase font-weight-medium" href="">Sin categorías</a>';
-                            categoryContainer.appendChild(noCategory);
-                        }
-
-                        textDiv.appendChild(categoryContainer);
-                    })
-                    .catch(error => {
-                        console.error('Error al obtener categorías:', error);
-                    });
-
+                loadEventCategories(event.id, textDiv);
                 eventDiv.appendChild(eventImage);
                 eventDiv.appendChild(textDiv);
                 upcomingEventsContainer.appendChild(eventDiv);
@@ -289,7 +259,41 @@ function loadEventDetailed() {
         .catch(error => {
             console.error('Error en la solicitud de eventos:', error);
         });
+}
 
+async function loadEventCategories(eventId, textDiv) {
+    try {
+        const response = await fetch(`${API_BASE_URL}/events/${eventId}/categories`);
+        if (!response.ok) {
+            throw new Error('No se encontraron categorías para este evento');
+        }
+        const categories = await response.json();
+        const categoryContainer = document.createElement('div');
+        categoryContainer.className = 'd-flex';
+
+        if (categories.length > 0) {
+            categories.forEach((category, index) => {
+                const categoryLink = document.createElement('small');
+                categoryLink.innerHTML = `<a class="text-secondary text-uppercase font-weight-medium" href="category.html?category_id=${category.id}">${category.name}</a>`;
+                categoryContainer.appendChild(categoryLink);
+
+                if (index < categories.length - 1) {
+                    const separator = document.createElement('small');
+                    separator.className = 'text-primary px-2';
+                    separator.innerText = '|';
+                    categoryContainer.appendChild(separator);
+                }
+            });
+        } else {
+            const noCategory = document.createElement('small');
+            noCategory.innerHTML = '<a class="text-secondary text-uppercase font-weight-medium" href="">Sin categorías</a>';
+            categoryContainer.appendChild(noCategory);
+        }
+
+        textDiv.appendChild(categoryContainer);
+    } catch (error) {
+        console.error('Error al obtener categorías:', error);
+    }
 }
 
 async function createRegistrationModal(eventId) {
@@ -321,50 +325,55 @@ async function createRegistrationModal(eventId) {
         this.remove();
     });
 
-    // Lógica para confirmar el registro
-    document.getElementById('confirmRegister').addEventListener('click', function() {
+    const confirmButton = document.getElementById('confirmRegister');
+    confirmButton.removeEventListener('click', handleRegisterClick);
+    confirmButton.addEventListener('click', handleRegisterClick);
+
+    function handleRegisterClick() {
         registerForEvent(eventId); // Llama a la función para registrarse
         registrationModal.hide();
-    });
+    }
 }
 
-function registerForEvent(eventId) {
-    const userId = localStorage.getItem('user_id');
-    fetch(`${API_BASE_URL}/registrations`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ user_id: userId, event_id: eventId })
-    })
-    .then(response => {
-        if (!response.ok) {
-            return response.json().then(errorData => {
-                // Si la respuesta es un error, lanza un error con el detalle de la API
-                throw new Error(errorData.detail || 'Error desconocido');
-            });
-        }
-        return response.json();
-    })
-    .then(data => {
-        console.log('Registro exitoso', data);
 
-        // Obtener los detalles del evento para mostrar en el modal
-        return fetch(`${API_BASE_URL}/events/${eventId}`);
-    })
-    .then(response => {
+async function registerForEvent(eventId) {
+    const userId = localStorage.getItem('user_id');
+    try {
+        const response = await fetch(`${API_BASE_URL}/registrations`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ user_id: userId, event_id: eventId })
+        });
+
         if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.detail || 'Error desconocido');
+        }
+
+        const eventResponse = await fetch(`${API_BASE_URL}/events/${eventId}`);
+        if (!eventResponse.ok) {
             throw new Error('Error al obtener detalles del evento');
         }
-        return response.json();
-    })
-    .then(eventDetails => {
-        createSuccessModal(eventDetails);
+
+        const eventDetails = await eventResponse.json();
+        
+        // Agregar la fecha del evento al final en el formato deseado
+        const formattedDate = new Date(eventDetails.date).toLocaleDateString('es-ES', {
+            year: 'numeric', month: 'long', day: '2-digit'
+        });
+
+        const eventTime = new Date(eventDetails.date).toLocaleTimeString('es-ES', {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+
+        createSuccessModal(`Su registro para el evento <strong>${eventDetails.name}</strong> en <strong>${eventDetails.location}, ${eventDetails.city}, ${eventDetails.country}</strong> el dia <strong>${formattedDate}</strong> a las <strong>${eventTime}*</strong> ha sido confirmado. <br>*(Hora local del evento)`);
         loadEventDetailed();
-    })
-    .catch(error => {
+    } catch (error) {
         createErrorModal('Error en la solicitud', error.message, '../contacto.html');
-    });
+    }
 }
 
 function createLoginAlertModal() {
@@ -403,81 +412,7 @@ function createLoginAlertModal() {
     });
 }
 
-function createSuccessModal(eventDetails) {
-    const modalHtml = `
-        <div class="modal fade" id="successModal" tabindex="-1" role="dialog" aria-labelledby="successModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="successModalLabel"><i class="fas fa-check-circle"></i> Registro Exitoso</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                    <div class="modal-body">
-                        <p>Te has registrado con éxito para el evento:</p>
-                        <h5>${eventDetails.name}</h5>
-                        <p><strong>Lugar:</strong> ${eventDetails.location}</p>
-                        <p><strong>Fecha:</strong> ${new Date(eventDetails.date).toLocaleDateString('es-ES', {
-                            year: 'numeric', month: 'long', day: 'numeric'
-                        })}</p>
-                        <p><strong>Hora:</strong> ${new Date(eventDetails.date).toLocaleTimeString('es-ES', {
-                            hour: '2-digit', minute: '2-digit', hour12: false
-                        })}</p>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
-                    </div>
-                </div>
-            </div>
-        </div>`;
-
-    document.body.insertAdjacentHTML('beforeend', modalHtml);
-
-    // Usar el método modal de Bootstrap 4 para mostrar el modal
-    $('#successModal').modal('show');
-
-    // Remover el modal después de que se cierre
-    $('#successModal').on('hidden.bs.modal', function () {
-        $(this).remove();
-    });
-}
-
-function createErrorModal(title, errorMessage, helpLink = '') {
-    const modalHtml = `
-        <div class="modal fade" id="errorModal" tabindex="-1" role="dialog" aria-labelledby="errorModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="errorModalLabel"><i class="fas fa-exclamation-circle"></i> ${title}</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                    <div class="modal-body" style="text-align: justify;">
-                        <p><i class="fas fa-info-circle"></i> ${errorMessage}</p>
-                        ${helpLink ? `<p style="text-align: center;"><a href="${helpLink}" target="_blank">Obtener más información</a></p>` : ''}
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
-                    </div>
-                </div>
-            </div>
-        </div>`;
-
-    document.body.insertAdjacentHTML('beforeend', modalHtml);
-
-    // Usar el método modal de Bootstrap 4 para mostrar el modal
-    $('#errorModal').modal('show');
-
-    // Remover el modal después de que se cierre
-    $('#errorModal').on('hidden.bs.modal', function () {
-        $(this).remove();
-    });
-}
-
-
-function handleRegisterEvent(event, eventId) {
+window.handleRegisterEvent = function(event, eventId) {
     event.preventDefault();
     const isLoggedIn = localStorage.getItem('authToken'); // Verifica si está logueado
     if (isLoggedIn) {

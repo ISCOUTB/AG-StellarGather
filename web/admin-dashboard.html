@@ -61,7 +61,7 @@
 
     <!-- Dashboard Start -->
     <div class="container">
-        <h2 class="text-center mb-5" id="greeting"></h2>
+        <h2 class="text-center mb-5" id="greeting">Saludos</h2>
         <!-- Estadísticas Generales -->
         <div class="row">
             <!-- Total de Comentarios -->
@@ -70,6 +70,7 @@
                     <div class="card-body">
                         <h5 class="card-title">Total de Comentarios</h5>
                         <p id="total-comments" class="display-4">0</p>
+                        <small>(De Todos los Eventos)</small>
                     </div>
                 </div>
             </div>
@@ -79,23 +80,23 @@
                     <div class="card-body">
                         <h5 class="card-title">Promedio de Calificación</h5>
                         <p id="avg-rating" class="display-4">0</p>
+                        <small>(De Todos los Eventos)</small>
                     </div>
                 </div>
             </div>
-            <!-- Promedio de Calificación -->
+            <!-- Número de Registros -->
             <div class="col-lg-4 mb-4">
-                <div class="card text-center bg-success text-light">
+                <div class="card text-center bg-warning text-light">
                     <div class="card-body">
-                        <h5 class="card-title">Promedio de Calificación</h5>
-                        <p id="avg-rating" class="display-4">0</p>
+                        <h5 class="card-title">Número de Registros</h5>
+                        <p id="total-registrations" class="display-4">0</p>
+                        <small>(Activos y Cancelados)</small>
                     </div>
                 </div>
             </div>
-        </div>
-        
+        </div>        
     </div>
     <!-- Dashboard End -->
-    
 
     <!-- Creation Panel Start -->
     <div class="container-fluid py-5">
@@ -231,7 +232,7 @@
                         </label>
                         <input type="file" id="organizer-image" class="form-control" accept="image/webp" required>
                         <small id="image-help" class="form-text text-muted">
-                            La imagen debe tener un tamaño de 100x100 píxeles y debe ser en formato .webp.
+                            La imagen debe tener un tamaño de 200x200 píxeles y debe ser en formato .webp.
                         </small>
                     </div>   
                     <div class="text-center">

@@ -32,8 +32,7 @@ async function loadEvents() {
     const events = await fetchUpcomingEvents();
     eventsContainer.innerHTML = '';
     
-    for (let i = 0; i < events.length; i++) {
-        const event = events[i];
+    for (const event of events) {
         // Obtener las categorías del evento
         const categories = await fetchCategories(event.id);
         const categoriesHtml = categories.map((cat, index) => {
